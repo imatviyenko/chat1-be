@@ -1,2 +1,2 @@
 # chat1-be
-Back end for demo chat app
+Node/Express back end for demo chat app
