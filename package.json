@@ -1,0 +1,26 @@
+{
+  "name": "chat1-be",
+  "version": "0.0.1",
+  "description": "Node/Express back end for demo chat app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imatviyenko/chat1-be.git"
+  },
+  "keywords": [
+    "chat1"
+  ],
+  "author": "imatviyenko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imatviyenko/chat1-be/issues"
+  },
+  "homepage": "https://github.com/imatviyenko/chat1-be#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
