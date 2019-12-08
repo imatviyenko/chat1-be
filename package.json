@@ -21,6 +21,10 @@
   },
   "homepage": "https://github.com/imatviyenko/chat1-be#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "http-errors": "^1.7.3",
+    "mongoose": "^5.7.14",
+    "serialize-error": "^5.0.0"
   }
 }

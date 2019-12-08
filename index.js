@@ -1,10 +1,9 @@
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
+const app = require('./app');
+const port = process.env.PORT || 3001;
+app.set('port', port);
 
-app.get('/', (req, res) => {
-    console.log(`Handling get request, timestamp: ${new Date().toString()}`);
-    res.send('Hello World!');
+const mongoose = require('mongoose');
+const mongodbUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/chat1';
+mongoose.connect(mongodbUri, {useNewUrlParser: true, useUnifiedTopology: true});
 
-});
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Exrpess is listening on port ${port}!`));
