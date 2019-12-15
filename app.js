@@ -7,6 +7,9 @@ var app = express();
 const cors = require('cors');
 app.use(cors());
 
+// json body parser
+app.use(express.json());
+
 // API routes
 const mainRooter = require('./api/routes');
 app.use('/', mainRooter);

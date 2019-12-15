@@ -11,7 +11,8 @@ console.log('mongodbUri: ', mongodbUri);
 
 mongoose.connect(mongodbUri, {
     useNewUrlParser: true, 
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useCreateIndex: true
 });
 
 app.listen(port, () => console.log(`Exrpess is listening on port ${port}!`));
