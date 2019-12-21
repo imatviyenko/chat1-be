@@ -6,7 +6,9 @@ async function create(user) {
         ...user,
         email: user.email.toLowerCase()
     });
-    await docUser.save();
+
+    console.log(`services.database.users.create -> user: ${JSON.stringify(user)}`);
+    return docUser.save();
 }
 
 async function upsertByEmailStatus(filterEmail, filterStatus, user) {

@@ -47,32 +47,32 @@ module.exports = function(router) {
             return next(createError(message, status, 403));
         };
 
-        let user;
+        let dbUser;
         try {
 
             // find the user with USER_STATUS_CONFIRMATION_PENDING status and complete the registration
             console.log(`confirm.post -> emailFromCode: ${emailFromCode}`);
-            const dbUser = await services.database.users.getByEmailStatus(emailFromCode, constants.USER_STATUS_CONFIRMATION_PENDING);
+            dbUser = await services.database.users.getByEmailStatus(emailFromCode, constants.USER_STATUS_CONFIRMATION_PENDING);
             console.log(`confirm.post -> dbUser: ${JSON.stringify(dbUser)}`);
 
             if (dbUser) {
-                user = {
+                const user = {
                     status: constants.USER_STATUS_ACTIVE
                 };
                 await services.database.users.upsertById(dbUser._id, user); // set existing user status to USER_STATUS_ACTIVE
             } else {
                 const message = `confirm.post -> No matching user waiting for email confirmation found in the database}`;
-                return next(createError(message, constants.ERROR_REGISTRATION_USER_NOT_FOUND, 404));
+                return next(createError(message, constants.ERROR_USER_NOT_FOUND, 404));
             }
         } catch (e) {
             const message = `confirm.post -> Error updating user in the database`;
-            return next(createError(message, constants.ERROR_REGISTRATION_DATABASE_FAILURE, 500, e));
+            return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 
         // if we successfully confirmed email the login the user
         result = {
             status: constants.ERROR_SUCCESS,
-            token: services.crypto.getAuthToken(user)
+            token: services.crypto.getAuthToken(dbUser)
         };
         res.json(result);
     });

@@ -4,11 +4,13 @@ const cors = require('cors');
 const constant = require('./constants');
 const {errorHandler, createError} = require('./errors');
 
-const mainRooter = require('./api/routes');
-
 var app = express();
 app.use(cors());
 app.use(express.json());
+
+
+
+const mainRooter = require('./api/routes');
 app.use('/', mainRooter);
 
 // if we got to this middleware, then no other middlewares processed the request and therefore we should return '404 Not Found'

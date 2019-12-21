@@ -13,7 +13,8 @@ const schema = new mongoose.Schema(
     passwordHash: String,
     status: { type: String, index: true, required: true },
     registrationDate: Date,
-    emailConfirmationCode: String
+    emailConfirmationCode: String,
+    contacts: [{ type : mongoose.Schema.Types.ObjectId, ref: 'User' }]
   },
   schemaOptions
 );

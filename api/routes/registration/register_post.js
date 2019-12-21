@@ -81,7 +81,7 @@ module.exports = function(router) {
             
         } catch (e) {
             const message = `register.post -> Error saving user to the datbase`;
-            return next(createError(message, constants.ERROR_REGISTRATION_DATABASE_FAILURE, 500, e));
+            return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 
         // Send out email with a confirmation link only if the email has not been provided in the encrypted code
