@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-require('./test')(router, 'test');
-require('./registration')(router, 'registration');
+require('./test')(router);
+require('./registration')(router);
+require('./auth')(router);
 
 module.exports = router;
