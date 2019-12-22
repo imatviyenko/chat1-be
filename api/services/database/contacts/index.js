@@ -1,6 +1,12 @@
 const constants = require('../../../../constants');
 const User = require('../../../models/User');
 
+const mapDbUserToContact = dbUser => ({
+    email: dbUser.email,
+    displayName: dbUser.displayName,
+    status: dbUser.status
+});
+
 
 async function getByUserEmail(userEmail) {
     const query = User.findOne({
@@ -12,7 +18,8 @@ async function getByUserEmail(userEmail) {
         .lean()
         .exec();
 
-    return dbUserWithContacts.contacts;
+    if (Array.isArray(dbUserWithContacts.contacts)) return dbUserWithContacts.contacts.map(mapDbUserToContact);
+    return [];
 }
 
 async function add(userEmail, contactDbUser) {
@@ -20,8 +27,8 @@ async function add(userEmail, contactDbUser) {
         email: userEmail.toLowerCase()
     };
     const update = { $push: { contacts: contactDbUser._id } };
-
-    return User.findOneAndUpdate(queryLiteral, update).exec();
+    await User.findOneAndUpdate(queryLiteral, update).exec();
+    return mapDbUserToContact(contactDbUser);
 }
 
 

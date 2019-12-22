@@ -39,10 +39,13 @@ async function _upsert(queryLiteral, user) {
 
 
 async function getByEmailStatus(filterEmail, filterStatus) {
-    const query = User.findOne({
-        email: filterEmail.toLowerCase(),
-        status: filterStatus
-    });
+    const queryLiteral = {
+        email: filterEmail.toLowerCase()
+    };
+    if (filterStatus) queryLiteral.status = filterStatus;
+    console.log(`getByEmailStatus -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+
+    const query = User.findOne(queryLiteral);
     return query.lean().exec();
 }
 

@@ -33,7 +33,14 @@ module.exports = function(router) {
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400));
         }
 
-        const contactEmail = req.body.contactEmail;
+        const contactEmail = req.body.contactEmail.toLowerCase();
+        
+        if (contactEmail === req.user.email.toLowerCase()) {
+            const message = 'contacts.post -> Error - the email of the contact is equal to the email of the user';
+            return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400));
+        }
+
+        let dbContact;
         try {
             let contactDbUser = await services.database.users.getByEmailStatus(contactEmail);
             console.log(`contacts.post -> contactDbUser1: ${JSON.stringify(contactDbUser)}`);
@@ -57,14 +64,15 @@ module.exports = function(router) {
             }
             
             console.log(`contacts.post -> contactDbUser3: ${JSON.stringify(contactDbUser)}`);
-            await services.database.contacts.add(req.user.email, contactDbUser);
+            dbContact = await services.database.contacts.add(req.user.email, contactDbUser);
         } catch (e) {
             const message = `contacts.post -> Error adding contact`;
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 
         result = {
-            status: constants.ERROR_SUCCESS
+            status: constants.ERROR_SUCCESS,
+            contact: dbContact
         };
         res.json(result);
     });
