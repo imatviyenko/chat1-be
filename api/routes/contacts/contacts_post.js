@@ -1,6 +1,7 @@
 const Joi = require('joi');
 
 const constants = require('../../../constants');
+const config = require('../../../config');
 const services = require('../../services');
 const {createError} = require('../../../errors');
 const {authorize} = require('../../../access');
@@ -41,6 +42,7 @@ module.exports = function(router) {
         }
 
         let dbContact;
+        let dbChat;
         try {
             let contactDbUser = await services.database.users.getByEmailStatus(contactEmail);
             console.log(`contacts.post -> contactDbUser1: ${JSON.stringify(contactDbUser)}`);
@@ -63,8 +65,17 @@ module.exports = function(router) {
                 }
             }
             
+            // Add contact to the user record in the database
             console.log(`contacts.post -> contactDbUser3: ${JSON.stringify(contactDbUser)}`);
             dbContact = await services.database.contacts.add(req.user.email, contactDbUser);
+
+            // Create a new private chat between the user and the contact
+            const chat = {
+                displayName: config.defaultPrivateChatDisplayName,
+                type: constants.CHAT_TYPE_PRIVATE,
+                usersEmails: [req.user.email, contactEmail]
+            };
+            dbChat = await services.database.chats.create(chat);
         } catch (e) {
             const message = `contacts.post -> Error adding contact`;
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
@@ -72,7 +83,8 @@ module.exports = function(router) {
 
         result = {
             status: constants.ERROR_SUCCESS,
-            contact: dbContact
+            contact: dbContact,
+            chat: dbChat
         };
         res.json(result);
     });

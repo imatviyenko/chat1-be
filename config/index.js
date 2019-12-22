@@ -6,7 +6,9 @@ const config = {
     serverSecret: process.env.SERVER_SECRET || 'secret123', // server secret string which is used for server side encryption and digital signature verification
     jwtIssuer: 'chat1-be_issuer',
     jwtAudience: 'chat1-be_audience',
-    jwtLifetimeSeconds: 86400 // auth token is valid for 24 hours
+    jwtLifetimeSeconds: 86400, // auth token is valid for 24 hours
+    defaultPrivateChatDisplayName: 'Private chat',
+    defaultGroupChatDisplayName: 'Group chat'
 };
 
 module.exports = config;

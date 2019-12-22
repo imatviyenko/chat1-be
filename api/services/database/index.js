@@ -1,9 +1,11 @@
 const users = require('./users');
-const contacts = require('./contacts');
 const profile = require('./profile');
+const contacts = require('./contacts');
+const chats = require('./chats');
 
 module.exports = {
     users,
+    profile,
     contacts,
-    profile
+    chats
 };
