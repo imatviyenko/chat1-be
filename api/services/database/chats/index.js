@@ -7,12 +7,10 @@ const User = require('../../../models/User')
 // get chats where the user specified by email is participating
 async function getByUserEmail(userEmail) {
     const queryLiteral = {
-        users: {
-            email: userEmail
-        }
+        "users.email": userEmail
     };
 
-    const query = Chat.findOne(queryLiteral);
+    const query = Chat.find(queryLiteral);
     return query.lean().exec();
 }
 
