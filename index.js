@@ -1,19 +1,21 @@
+const http = require('http');
 const config = require('./config');
 
-const app = require('./app');
+// Initialize Mongoose 
+const initMongoose = require('./mongoose');
+initMongoose();
+
+// Initialize Express app
+const expressApp = require('./expressApp');
+const server = http.createServer(expressApp);
+
+// Initialize WebSocket server instance
+const {onUpgrade, initEvents} = require('./ws');
+server.on('upgrade', onUpgrade);
+initEvents(); // start listening to events
+
+// Start http server
 const port = config.port;
-app.set('port', port);
-
-const mongoose = require('mongoose');
-const mongodbUri = config.mongodbUri;
-console.log('mongodbUri: ', mongodbUri);
-
-
-mongoose.connect(mongodbUri, {
-    useNewUrlParser: true, 
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
+server.listen(port, () => {
+    console.log(`Server started on port ${server.address().port}`);
 });
-
-app.listen(port, () => console.log(`Exrpess is listening on port ${port}!`));

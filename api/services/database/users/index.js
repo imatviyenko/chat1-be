@@ -1,5 +1,6 @@
 const constants = require('../../../../constants');
-const User = require('../../../models/User');
+const User = require('../models/User');
+const UpdateUserOnlineStatus = require('../models/UpdateUserOnlineStatus');
 
 async function create(user) {
     const docUser = new User({
@@ -49,9 +50,61 @@ async function getByEmailStatus(filterEmail, filterStatus) {
     return query.lean().exec();
 }
 
+async function getOnlineUsersIdsByContactId(contactUserId) {
+    const queryLiteral = {
+        isOnline: true,
+        "contacts": contactUserId
+    };
+    console.log(`getOnlineUsersIdsByContactId -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+
+    const query = User.find(queryLiteral, '_id'); // get only _id property of all matching users
+    const dbResult = await query.lean().exec();
+    console.log(`getOnlineUsersIdsByContactId -> dbResult: ${JSON.stringify(dbResult)}`);
+    return dbResult.map( d => d._id );
+}
+
+async function setUserOnlineStatus(userId, isOnline) {
+    const queryLiteral = {
+        _id: userId
+    };    
+    const query = User.updateOne(
+        queryLiteral,
+        {isOnline},
+        {upsert: true}
+    );
+    await query.exec();
+
+    const affectedUsers  = await getOnlineUsersIdsByContactId(userId);
+    
+    console.log(`services.database.users.setUserOnlineStatus -> userId: ${JSON.stringify(userId)}`);
+    console.log(`services.database.users.setUserOnlineStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
+    const docUpdateUserOnlineStatus = new UpdateUserOnlineStatus({
+        userId,
+        isOnline,
+        affectedUsers
+    });
+    return docUpdateUserOnlineStatus.save();
+}
+
+async function isUserOnline(email) {
+    const queryLiteral = {
+        email
+    };    
+    const query = User.findOne(
+        queryLiteral,
+        'isOnline'
+    );
+    
+    const dbResult = query.lean().exec();
+    return dbResult && !!dbResult.isOnline;
+}
+
 module.exports = {
     create,
     upsertByEmailStatus,
     upsertById,
-    getByEmailStatus
+    getByEmailStatus,
+    isUserOnline,
+    setUserOnlineStatus,
+    getOnlineUsersIdsByContactId
 };

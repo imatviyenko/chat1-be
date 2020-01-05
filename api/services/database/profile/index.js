@@ -1,5 +1,5 @@
 const constants = require('../../../../constants');
-const User = require('../../../models/User');
+const User = require('../models/User');
 
 const mapDbUserToProfile = dbUser => ({
     email: dbUser.email,

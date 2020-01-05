@@ -45,10 +45,30 @@ function getAuthToken(user) {
     //return `${config.serverSecret}:${user.email}`;
 }
 
+function decodeAuthToken(token) {
+    console.log(`services.crypto.decodeAuthToken -> token: ${token}`);
+
+    const options = {
+        algorithm: 'HS256',
+        expiresIn: config.jwtLifetimeSeconds,
+        issuer: config.jwtIssuer,
+        audience: config.jwtAudience
+    };
+    
+    try {
+        const decodedPayload = jsonwebtoken.verify(token, config.serverSecret, options);
+        console.log(`services.crypto.decodeAuthToken -> decodedPayload: ${JSON.stringify(decodedPayload)}`);
+        return decodedPayload;
+    } catch (e) {
+        return null;
+    }
+}
+
 module.exports = {
     getPasswordHash,
     validatePassword,
     encodeString,
     decodeString,
-    getAuthToken
+    getAuthToken,
+    decodeAuthToken
 };

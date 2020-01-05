@@ -31,6 +31,7 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "serialize-error": "^5.0.0",
-    "validator": "^12.1.0"
+    "validator": "^12.1.0",
+    "ws": "^7.2.1"
   }
 }

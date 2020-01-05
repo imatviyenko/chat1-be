@@ -1,7 +1,7 @@
 const constants = require('../../../../constants');
 const {createError} = require('../../../../errors');
-const Chat = require('../../../models/Chat');
-const User = require('../../../models/User')
+const Chat = require('../models/Chat');
+const User = require('../models/User')
 
 
 // get chats where the user specified by email is participating
