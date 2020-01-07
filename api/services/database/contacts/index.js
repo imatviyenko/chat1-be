@@ -4,7 +4,8 @@ const User = require('../models/User');
 const mapDbUserToContact = dbUser => ({
     email: dbUser.email,
     displayName: dbUser.displayName,
-    status: dbUser.status
+    status: dbUser.status,
+    isOnline: dbUser.isOnline
 });
 
 

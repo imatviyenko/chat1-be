@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const uuidv4 = require('uuid/v4');
 
 const schemaOptions = {
   collection: 'chats',
@@ -8,6 +9,7 @@ const schemaOptions = {
 
 const schema = new mongoose.Schema(
   {
+    guid: { type: String, required: true, default:  uuidv4().toLowerCase()}, // use string type for guids instead of the more perfomant binary uuid type for ease of implementation
     displayName: { type: String, required: true },
     type: { type: String, required: true },
     users: [

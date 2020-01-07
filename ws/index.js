@@ -2,13 +2,25 @@ const WebSocket = require('ws');
 
 const constants = require('../constants');
 const services = require('../api/services');
-const {eventEmmiterUserOnlineStatus, EVENT_USER_ONLINE} = require('../api/events');
+const {eventEmmiterWatcher} = require('../api/events');
 
 const openSockets = {};
 
 const wss = new WebSocket.Server({ noServer: true });
 wss.on('connection', async (ws, request) => {
     openSockets[request.user._id] = ws; // store reference for the active web socket for user with the specified _id in a hash table
+
+    ws.on('close', async () => {
+        console.log(`socket closed for  user with email ${request.user.email}`);
+        delete openSockets[request.user._id];
+
+        try {
+            await services.database.users.setUserOnlineStatus(request.user._id, false);
+        } catch(e) {
+            console.error(`Error updating user online status in database:`);
+            console.error(e);
+        };
+    });
 
     try {
         await services.database.users.setUserOnlineStatus(request.user._id, true);
@@ -29,14 +41,45 @@ wss.on('connection', async (ws, request) => {
     */
 });
 
+const brodcastMessageToAffectedUsers = (wsMessage, affectedUsers) => {
+    if (Array.isArray(affectedUsers)) {
+        affectedUsers.forEach( affectedUserId => {
+            const ws = openSockets[affectedUserId];
+            if (ws) ws.send(JSON.stringify(wsMessage));
+        });
+    }
+};
+
 
 const initEvents = () => {
     
-    eventEmmiterUserOnlineStatus.on(EVENT_USER_ONLINE, data => {
-        console.log(`ws.eventEmmiterUserOnlineStatus.on -> data: ${JSON.stringify(data)}`);
-
+    eventEmmiterWatcher.on(constants.EVENT_USER_ONLINE, data => {
+        console.log(`ws.eventEmmiterWatcher.on.EVENT_USER_ONLINE -> data: ${JSON.stringify(data)}`);
+        const wsMessage = {
+            event: constants.EVENT_USER_ONLINE,
+            data: data.user.email
+        };
+        brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
     });
-    
+
+    eventEmmiterWatcher.on(constants.EVENT_USER_OFFLINE, data => {
+        console.log(`ws.eventEmmiterWatcher.onEVENT_USER_OFFLINE -> data: ${JSON.stringify(data)}`);
+        const wsMessage = {
+            event: constants.EVENT_USER_OFFLINE,
+            data: data.user.email
+        };
+        brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
+    });
+
+    eventEmmiterWatcher.on(constants.EVENT_USER_PROFILE_UPDATED, data => {
+        console.log(`ws.eventEmmiterWatcher.onEVENT_USER_PROFILE_UPDATED -> data: ${JSON.stringify(data)}`);
+        const wsMessage = {
+            event: constants.EVENT_USER_PROFILE_UPDATED,
+            data: data.user
+        };
+        brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
+    });    
+
 }
 
 

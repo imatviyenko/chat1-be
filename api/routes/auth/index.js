@@ -43,6 +43,12 @@ module.exports = function(router) {
         };
 
         if (dbUser) {
+            // check if this user is already online and return error if he is - we only allow one active session per user
+            if (dbUser.isOnline) {
+                const message = `auth.post -> User is already online}`;
+                return next(createError(message, constants.ERROR_AUTH_USER_ALREADY_ONLINE, 401));
+            }
+
             const isPasswordValid = await services.crypto.validatePassword(req.body.password, dbUser.passwordHash);
             if (!isPasswordValid) {
                 const message = `auth.post -> Incorrect password}`;

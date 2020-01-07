@@ -80,7 +80,7 @@ module.exports = function(router) {
             }
             
         } catch (e) {
-            const message = `register.post -> Error saving user to the datbase`;
+            const message = `register.post -> Error saving user to the database`;
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 

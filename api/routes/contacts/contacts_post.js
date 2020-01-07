@@ -69,6 +69,9 @@ module.exports = function(router) {
             console.log(`contacts.post -> contactDbUser3: ${JSON.stringify(contactDbUser)}`);
             dbContact = await services.database.contacts.add(req.user.email, contactDbUser);
 
+            // add the current user to list of contact of the contact (if User1 adds User2 as a contact, then User2 will have User1 in his contacts as well)
+            await services.database.contacts.add(contactDbUser.email, req.user);
+
             // Create a new private chat between the user and the contact
             const chat = {
                 displayName: config.defaultPrivateChatDisplayName,

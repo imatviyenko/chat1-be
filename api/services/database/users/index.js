@@ -1,6 +1,7 @@
 const constants = require('../../../../constants');
 const User = require('../models/User');
 const UpdateUserOnlineStatus = require('../models/UpdateUserOnlineStatus');
+const UpdateUserProfileProperties = require('../models/UpdateUserProfileProperties');
 
 async function create(user) {
     const docUser = new User({
@@ -18,7 +19,18 @@ async function upsertByEmailStatus(filterEmail, filterStatus, user) {
     };
     if (filterStatus) queryLiteral.status = filterStatus;
 
-    await _upsert(queryLiteral, user);
+    const dbUser = await _upsert(queryLiteral, user);
+    console.log(`services.database.users.upsertByEmailStatus -> dbUser: ${JSON.stringify(dbUser)}`);
+
+    // add record to the capped collection UpdateUserProfileProperties monitored by back-end server instances via the MongoDB Change Stream feature 
+    // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in user profile properties
+    const affectedUsers  = await getOnlineUsersIdsByContactId(dbUser._id);
+    console.log(`services.database.users.upsertByEmailStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
+    const docUpdateUserProfileProperties = new UpdateUserProfileProperties({
+        userId: dbUser._id,
+        affectedUsers
+    });
+    return docUpdateUserProfileProperties.save();
 }
 
 async function upsertById(filterId, user) {
@@ -30,14 +42,26 @@ async function upsertById(filterId, user) {
 
 
 async function _upsert(queryLiteral, user) {
+    const query = User.findOneAndUpdate(
+        queryLiteral,
+        {$set: user},
+        {upsert: true, new: true}
+    );
+    return query.lean().exec();
+    /*
     const query = User.updateOne(
         queryLiteral,
         {$set: user},
         {upsert: true}
     );
     await query.exec();
+    */
 }
 
+async function getById(userId) {
+    const query = User.findById(userId);
+    return query.lean().exec();
+}
 
 async function getByEmailStatus(filterEmail, filterStatus) {
     const queryLiteral = {
@@ -74,8 +98,9 @@ async function setUserOnlineStatus(userId, isOnline) {
     );
     await query.exec();
 
+    // add record to the capped collection UpdateUserOnlineStatus monitored by back-end server instances via the MongoDB Change Stream feature 
+    // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in user online status
     const affectedUsers  = await getOnlineUsersIdsByContactId(userId);
-    
     console.log(`services.database.users.setUserOnlineStatus -> userId: ${JSON.stringify(userId)}`);
     console.log(`services.database.users.setUserOnlineStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
     const docUpdateUserOnlineStatus = new UpdateUserOnlineStatus({
@@ -103,6 +128,7 @@ module.exports = {
     create,
     upsertByEmailStatus,
     upsertById,
+    getById,
     getByEmailStatus,
     isUserOnline,
     setUserOnlineStatus,
