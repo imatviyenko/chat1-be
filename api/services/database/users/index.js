@@ -111,6 +111,16 @@ async function setUserOnlineStatus(userId, isOnline) {
     return docUpdateUserOnlineStatus.save();
 }
 
+// Reset online status for all users when back-end server is restarted
+async function resetAllUsersOnlineStatus() {
+    const query = User.updateMany(
+        {},
+        {isOnline: false}
+    );
+    await query.exec();
+}
+
+
 async function isUserOnline(email) {
     const queryLiteral = {
         email
@@ -132,5 +142,6 @@ module.exports = {
     getByEmailStatus,
     isUserOnline,
     setUserOnlineStatus,
-    getOnlineUsersIdsByContactId
+    getOnlineUsersIdsByContactId,
+    resetAllUsersOnlineStatus
 };

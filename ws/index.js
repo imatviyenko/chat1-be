@@ -6,6 +6,13 @@ const {eventEmmiterWatcher} = require('../api/events');
 
 const openSockets = {};
 
+// Reset online status for all users when back-end server is restarted
+// Due to limitations of the current implementation, all back-end server instaces must be started before first users connects to the system, 
+// because each server instance resets users' online status when it initializes
+(async () => {await services.database.users.resetAllUsersOnlineStatus()})();
+
+
+
 const wss = new WebSocket.Server({ noServer: true });
 wss.on('connection', async (ws, request) => {
     openSockets[request.user._id] = ws; // store reference for the active web socket for user with the specified _id in a hash table
