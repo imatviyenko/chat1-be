@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const uuidv4 = require('uuid/v4');
 
 const schemaOptions = {
   collection: 'chats',
@@ -9,9 +8,10 @@ const schemaOptions = {
 
 const schema = new mongoose.Schema(
   {
-    guid: { type: String, required: true, default:  uuidv4().toLowerCase()}, // use string type for guids instead of the more perfomant binary uuid type for ease of implementation
+    guid: { type: String, required: true}, // use string type for guids instead of the more perfomant binary uuid type for ease of implementation
     displayName: { type: String, required: true },
     type: { type: String, required: true },
+    lastMessageTimestamp:  { type: Date, required: false }, // the timestamp for the moment when the last message to this chat was posted, used for sorting
     users: [
       {
         _id: { type : mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },

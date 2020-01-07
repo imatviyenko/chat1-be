@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const uuidv4 = require('uuid/v4');
 
 const constants = require('../../../constants');
 const config = require('../../../config');
@@ -73,7 +74,9 @@ module.exports = function(router) {
             await services.database.contacts.add(contactDbUser.email, req.user);
 
             // Create a new private chat between the user and the contact
+            
             const chat = {
+                guid: uuidv4().toLowerCase(),
                 displayName: config.defaultPrivateChatDisplayName,
                 type: constants.CHAT_TYPE_PRIVATE,
                 usersEmails: [req.user.email, contactEmail]

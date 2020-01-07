@@ -39,6 +39,7 @@ async function create(chat) {
 
 
     const docChat = new Chat({
+        guid: chat.guid,
         displayName: chat.displayName,
         type: chat.type,
         users: dbUsers
