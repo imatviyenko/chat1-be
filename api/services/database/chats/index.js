@@ -48,7 +48,22 @@ async function create(chat) {
 }
 
 
+async function updateByGuid(chatGuid, chat) {
+    const queryLiteral = {
+        guid: chatGuid
+    };
+
+    const query = Chat.findOneAndUpdate(
+        queryLiteral,
+        {$set: chat},
+        {upsert: false, new: true}
+    );
+    return query.lean().exec();
+}
+
+
 module.exports = {
     create,
-    getByUserEmail
+    getByUserEmail,
+    updateByGuid
 };
