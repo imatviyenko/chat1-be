@@ -43,6 +43,8 @@ module.exports = function(router) {
             if (!emailFromCode) throw createInvalidCodeError();
         } catch (e) {
             const message = `confirm.post -> Error decoding code ${req.body.code}: ${errorToString(e)}`;
+            console.error(message);
+            console.error(e);
             const status = e.name == constants.ERROR_REGISTRATION_INVALID_CODE ? constants.ERROR_REGISTRATION_INVALID_CODE : constants.ERROR_GENERIC_SERVER_FAILURE;
             return next(createError(message, status, 403));
         };
@@ -66,6 +68,8 @@ module.exports = function(router) {
             }
         } catch (e) {
             const message = `confirm.post -> Error updating user in the database`;
+            console.error(message);
+            console.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 

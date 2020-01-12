@@ -87,6 +87,15 @@ const initEvents = () => {
         brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
     });    
 
+    eventEmmiterWatcher.on(constants.EVENT_CHAT_UPDATED, data => {
+        console.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_UPDATED -> data: ${JSON.stringify(data)}`);
+        const wsMessage = {
+            event: constants.EVENT_CHAT_UPDATED,
+            data: data.chat
+        };
+        brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
+    });    
+
 }
 
 

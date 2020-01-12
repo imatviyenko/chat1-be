@@ -1,6 +1,10 @@
+const Joi = require('joi');
+
 const constants = require('../../../constants');
+const config = require('../../../config');
 const services = require('../../services');
 const {createError, createCustomError} = require('../../../errors');
+const {authorize} = require('../../../access');
 
 
 const createInvalidCodeError = () => createCustomError(constants.ERROR_REGISTRATION_INVALID_CODE);
@@ -12,17 +16,17 @@ const validateBody = body => {
     const schema = Joi.object().keys({ 
         guid: Joi.string().guid().required(),
         displayName: Joi.string().required(),
-        type: Joi.string().valid(constants.CHAT_TYPE_PRIVATE,constants.CHAT_TYPE_GROUP).required,
-        lastMessageTimestamp: Joi.date().required(),
+        type: Joi.string().valid(constants.CHAT_TYPE_PRIVATE,constants.CHAT_TYPE_GROUP).required(),
+        lastMessageTimestamp: Joi.date(),
         users: Joi.array().when('type', {is: constants.CHAT_TYPE_PRIVATE, then: Joi.array().length(2)} )
       }); 
 
-    return Joi.validate(body, schema);
+    return Joi.validate(body, schema, {allowUnknown: true}); // allow unknown props like createdAt, __v and etc.
 };
 
 
 module.exports = function(router) {
-    router.put(`/chats/:guid`, function(req, res, next) {  
+    router.put(`/chats/:guid`, authorize, async function(req, res, next) {  
         console.log(`\nHandling PUT request for path /chats/guid, timestamp: ${new Date().toString()}`);
 
         const chatGuid = req.params['guid'];
@@ -33,18 +37,22 @@ module.exports = function(router) {
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
-            const message = 'confirm.post -> Error validating request body';
+            const message = 'chats.put -> Error validating request body';
             console.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
+        console.log(`chats.put -> req.body validated succcessfully`);
 
 
         const chat = req.body;
         let updatedChat;
         try {
             updatedChat = await services.database.chats.updateByGuid(chatGuid, chat);
+            console.log(`chats.put -> updatedChat: ${JSON.stringify(updatedChat)}`);
         } catch (e) {
             const message = `chats.put -> Error updating chat with guid ${chatGuid} in the database`;
+            console.error(message);
+            console.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 

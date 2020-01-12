@@ -11,7 +11,7 @@ const validateBody = body => {
     const schema = Joi.object().keys({ 
         email: Joi.string().email().required(),
         password: Joi.string().min(constants.MIN_PASSWORD_LENGTH).max(constants.MIN_PASSWORD_LENGTH).required()
-      }); 
+    }); 
 
     return Joi.validate(body, schema);
 };
@@ -39,6 +39,8 @@ module.exports = function(router) {
             console.log(`auth.post -> dbUser: ${JSON.stringify(dbUser)}`);
         } catch (e) {
             const message = `auth.post -> Error finding user in the database`;
+            console.error(message);
+            console.error(e);
             return next(createError(message, constants.ERROR_GENERIC_SERVER_FAILURE, 500, e));
         };
 

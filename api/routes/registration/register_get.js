@@ -18,6 +18,8 @@ module.exports = function(router) {
             if (!emailFromCode) throw createInvalidCodeError();
         } catch (e) {
             const message = `register.get -> Error decoding code ${code}}`;
+            console.error(message);
+            console.error(e);
             const status = e.name == constants.ERROR_REGISTRATION_INVALID_CODE ? constants.ERROR_REGISTRATION_INVALID_CODE : constants.ERROR_GENERIC_SERVER_FAILURE;
             return next(createError(message, status, 403));
         };

@@ -1,7 +1,9 @@
 const constants = require('../../../../constants');
 const users = require('../users');
+const chats = require('../chats');
 const UpdateUserOnlineStatus = require('../models/UpdateUserOnlineStatus');
 const UpdateUserProfileProperties = require('../models/UpdateUserProfileProperties');
+const UpdateChatProperties = require('../models/UpdateChatProperties');
 const {eventEmmiterWatcher} = require('../../../events');
 
 
@@ -48,7 +50,29 @@ const initWatchers = () => {
                 return;
         }
     
-    });    
+    });
+
+
+    UpdateChatProperties.watch().on('change', async data => {
+        console.log(`watchers.UpdateChatProperties.change -> data: ${JSON.stringify(data)}`);
+        const operationType = data && data.operationType;
+        if (!operationType) return;
+
+        switch (operationType) {
+            
+            case 'insert':
+                const chatGuid = data.fullDocument.chatGuid;
+                const dbChat = await chats.getByGuid(chatGuid);
+                const eventData = {
+                    chat: dbChat,
+                    affectedUsers: data.fullDocument.affectedUsers
+                }
+                const event = constants.EVENT_CHAT_UPDATED;
+                eventEmmiterWatcher.emit(event, eventData);
+                return;
+        }
+    
+    });  
 }
 
 module.exports = initWatchers;

@@ -23,7 +23,7 @@ module.exports = function(router) {
 
     router.post(`/contacts`, authorize, async function(req, res, next) {  
         console.log(`\nHandling POST request for path /contacts, timestamp: ${new Date().toString()}`);
-        console.log(`User from token: ${JSON.stringify(req.user)}`);
+        console.log(`contacts.post -> user from token: ${JSON.stringify(req.user)}`);
         console.log(`contacts.post -> req.body:`);
         console.log(req.body);
 
@@ -62,6 +62,8 @@ module.exports = function(router) {
                     await services.email.sendRegistrationRequest(req.user.email, req.user.displayName, contactEmail);
                 } catch (e) {
                     const message = `contacts.post -> Error sending registration request to contact email ${contactEmail}, user record created and may need to be deleted`;
+                    console.error(message);
+                    console.error(e);
                     return next(createError(message, constants.ERROR_REGISTRATION_EMAIL_SENDING_FAILURE, 500, e));
                 }
             }
@@ -84,6 +86,8 @@ module.exports = function(router) {
             dbChat = await services.database.chats.create(chat);
         } catch (e) {
             const message = `contacts.post -> Error adding contact`;
+            console.error(message);
+            console.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 

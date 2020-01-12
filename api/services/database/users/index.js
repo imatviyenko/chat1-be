@@ -87,6 +87,8 @@ async function getOnlineUsersIdsByContactId(contactUserId) {
     return dbResult.map( d => d._id );
 }
 
+
+
 async function setUserOnlineStatus(userId, isOnline) {
     const queryLiteral = {
         _id: userId

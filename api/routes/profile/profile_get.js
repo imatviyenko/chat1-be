@@ -13,6 +13,8 @@ module.exports = function(router) {
             profile = await services.database.profile.getByUserEmail(req.user.email);
         } catch (e) {
             const message = `profile.get -> Error getting user profile from database`;
+            console.error(message);
+            console.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 
