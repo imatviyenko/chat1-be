@@ -14,6 +14,8 @@ module.exports = function(router) {
             chats = await services.database.chats.getByUserEmail(req.user.email);
         } catch (e) {
             const message = `chats.get -> Error getting chats from database`;
+            console.error(message);
+            console.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 
