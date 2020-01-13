@@ -3,6 +3,7 @@ const {createError} = require('../../../../errors');
 const Chat = require('../models/Chat');
 const User = require('../models/User');
 const UpdateChatProperties = require('../models/UpdateChatProperties');
+const {usersEmailsToDbUsers} = require('../users');
 
 
 // get chats where the user specified by email is participating
@@ -26,21 +27,7 @@ async function getByGuid(chatGuid) {
 }
 
 
-// convert chat.usersEmails to dbUsers with _id field
-async function usersEmailsToDbUsers(usersEmails) {
-    let dbUsers = [];
-    if (Array.isArray(usersEmails)) {
-        const dbUsersPromises = usersEmails.map( async userEmail => {
-            console.log(`services.chats.create -> userEmail: ${userEmail}`);        
-            const dbUser = await User.findOne({email: userEmail.toLowerCase()}).lean().exec();
-            console.log(`services.chats.create -> dbUser: ${JSON.stringify(dbUser)}`);
-            if (!dbUser) throw createError(`services.database.chats.create -> Could not find user by email ${userEmail}`);
-            dbUsers.push(dbUser);
-        });
-        await Promise.all(dbUsersPromises);
-    }
-    return dbUsers;
-}
+
 
 // create new chat
 async function create(chat) {
@@ -61,13 +48,12 @@ async function create(chat) {
 
     // add record to the capped collection UpdateChatProperties monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in chat properties
-    const affectedUsers  = dbUsers.map( u => u._id );
+    const affectedUsers  = dbUsers.map( u => ({_id: u._id, isOnline: u.isOnline}) );
     const docUpdateChatProperties = new UpdateChatProperties({
         chatGuid: chat.guid,
         affectedUsers
     });
     await docUpdateChatProperties.save();
-
     
     // fetch newly created Chat document from the database again an return it as a lean object
     const queryLiteral = {
@@ -100,7 +86,7 @@ async function updateByGuid(chatGuid, chat) {
 
     // add record to the capped collection UpdateChatProperties monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in chat properties
-    const affectedUsers  = dbUsers.map( u => u._id );
+    const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
     const docUpdateChatProperties = new UpdateChatProperties({
         chatGuid: chat.guid,
         affectedUsers

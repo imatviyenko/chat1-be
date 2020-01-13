@@ -4,6 +4,7 @@ const chats = require('../chats');
 const UpdateUserOnlineStatus = require('../models/UpdateUserOnlineStatus');
 const UpdateUserProfileProperties = require('../models/UpdateUserProfileProperties');
 const UpdateChatProperties = require('../models/UpdateChatProperties');
+const UpdateChatMessages = require('../models/UpdateChatMessages');
 const {eventEmmiterWatcher} = require('../../../events');
 
 
@@ -22,7 +23,7 @@ const initWatchers = () => {
                 const eventData = {
                     user: dbUser,
                     affectedUsers: data.fullDocument.affectedUsers
-                }
+                };
                 const event = data.fullDocument.isOnline ? constants.EVENT_USER_ONLINE : constants.EVENT_USER_OFFLINE;
                 eventEmmiterWatcher.emit(event, eventData);
                 return;
@@ -44,7 +45,7 @@ const initWatchers = () => {
                 const eventData = {
                     user: dbUser,
                     affectedUsers: data.fullDocument.affectedUsers
-                }
+                };
                 const event = constants.EVENT_USER_PROFILE_UPDATED;
                 eventEmmiterWatcher.emit(event, eventData);
                 return;
@@ -66,13 +67,32 @@ const initWatchers = () => {
                 const eventData = {
                     chat: dbChat,
                     affectedUsers: data.fullDocument.affectedUsers
-                }
+                };
                 const event = constants.EVENT_CHAT_UPDATED;
                 eventEmmiterWatcher.emit(event, eventData);
                 return;
         }
     
-    });  
+    });
+
+    UpdateChatMessages.watch().on('change', async data => {
+        console.log(`watchers.UpdateChatMessages.change -> data: ${JSON.stringify(data)}`);
+        const operationType = data && data.operationType;
+        if (!operationType) return;
+
+        switch (operationType) {
+            
+            case 'insert':
+                const eventData = {
+                    chatGuid: data.fullDocument.chatGuid,
+                    affectedUsers: data.fullDocument.affectedUsers
+                };
+                const event = constants.EVENT_CHAT_UPDATED;
+                eventEmmiterWatcher.emit(event, eventData);
+                return;
+        }
+    
+    });    
 }
 
 module.exports = initWatchers;

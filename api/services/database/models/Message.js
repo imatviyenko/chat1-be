@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const CounterModel = require('./Counter');
 
 const schemaOptions = {
   collection: 'messages',
@@ -10,22 +9,13 @@ const schemaOptions = {
 const schema = new mongoose.Schema(
   {
     text: { type: String, required: true },
-    chat: { type : mongoose.Schema.Types.ObjectId, ref: 'Chat', index: true },
-    sequenceNumber: {type: Number, required: true}, // atuo incrementing sequence number of messages in one chat
-    users: [{ type : mongoose.Schema.Types.ObjectId, ref: 'User', index: true }]
+    chatGuid: { type: String, required: true, index: true },
+    authorEmail: { type: String, required: true }
   },
   schemaOptions
 );
 
-// https://stackoverflow.com/questions/28357965/mongoose-auto-increment
-schema.pre('save', async function() {
-  // Don't increment if this is NOT a newly created document
-  if(!this.isNew) return;
+schema.index({ createdAt: 1 }); // schema level index on the automatically provisioned createdAt field
 
-  const nextSequenceNumber = await CounterModel.increment('messages');
-  this.sequenceNumber = nextSequenceNumber;
-});
-
-
-var model = mongoose.model('Chat', schema);
+var model = mongoose.model('Message', schema);
 module.exports = model;

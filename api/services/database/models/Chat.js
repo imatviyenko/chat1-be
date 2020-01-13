@@ -8,7 +8,7 @@ const schemaOptions = {
 
 const schema = new mongoose.Schema(
   {
-    guid: { type: String, required: true}, // use string type for guids instead of the more perfomant binary uuid type for ease of implementation
+    guid: { type: String, required: true, index: true}, // use string type for guids instead of the more perfomant binary uuid type for ease of implementation
     displayName: { type: String, required: true },
     type: { type: String, required: true },
     lastMessageTimestamp:  { type: Date, required: false }, // the timestamp for the moment when the last message to this chat was posted, used for sorting
@@ -16,7 +16,8 @@ const schema = new mongoose.Schema(
       {
         _id: { type : mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },
         email: { type : String, index: true, required: true},
-        cutoffSequenceNumber: { type : Number } // this chat's messages with sequence numbers less than this value will not be fetched for this user
+        lastReadMessageTimestamp: { type : Date }, // all messages before this date have been read by user
+        deletedMessagesCutoffTimestamp: {type: Data} // all messages before this date have been delete for this user
       }
     ]
   },

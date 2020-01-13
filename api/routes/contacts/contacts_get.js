@@ -6,7 +6,7 @@ const {authorize} = require('../../../access');
 module.exports = function(router) {
     router.get(`/contacts`, authorize, async function(req, res, next) {  // get contacts for user specified by the auth token
         console.log(`\nHandling GET request for path /contacts, timestamp: ${new Date().toString()}`);
-        console.log(`User from token: ${JSON.stringify(req.user)}`);
+        console.log(`contacts.get -> user from token: ${JSON.stringify(req.user)}`);
 
         let contacts;
         try {

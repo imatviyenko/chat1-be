@@ -8,7 +8,10 @@ const config = {
     jwtAudience: 'chat1-be_audience',
     jwtLifetimeSeconds: 86400, // auth token is valid for 24 hours
     defaultPrivateChatDisplayName: 'Private chat',
-    defaultGroupChatDisplayName: 'Group chat'
+    defaultGroupChatDisplayName: 'Group chat',
+    messageTimestampPrecisionSeconds: 60, // allowed time error for message timestamps - take this value into account when selecting messages for 'after' and 'before' ranges
+    dbQueryResultCountLimit: 1000 // limit the max number for returned messages
+
 };
 
 module.exports = config;

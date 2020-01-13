@@ -24,7 +24,8 @@ async function upsertByEmailStatus(filterEmail, filterStatus, user) {
 
     // add record to the capped collection UpdateUserProfileProperties monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in user profile properties
-    const affectedUsers  = await getOnlineUsersIdsByContactId(dbUser._id);
+    const dbUsers  = await getUsersByContactId(dbUser._id);
+    const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
     console.log(`services.database.users.upsertByEmailStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
     const docUpdateUserProfileProperties = new UpdateUserProfileProperties({
         userId: dbUser._id,
@@ -74,6 +75,7 @@ async function getByEmailStatus(filterEmail, filterStatus) {
     return query.lean().exec();
 }
 
+/*
 async function getOnlineUsersIdsByContactId(contactUserId) {
     const queryLiteral = {
         isOnline: true,
@@ -86,8 +88,19 @@ async function getOnlineUsersIdsByContactId(contactUserId) {
     console.log(`getOnlineUsersIdsByContactId -> dbResult: ${JSON.stringify(dbResult)}`);
     return dbResult.map( d => d._id );
 }
+*/
 
+async function getUsersByContactId(contactUserId) {
+    const queryLiteral = {
+        "contacts": contactUserId
+    };
 
+    const query = User.find(queryLiteral, '_id email isOnline'); // get only _id and isOnline property of all matching users
+    const dbResult = await query.lean().exec();
+    console.log(`getUsersByContactId -> dbResult: ${JSON.stringify(dbResult)}`);
+    return dbResult.map( d => d._id );
+
+}
 
 async function setUserOnlineStatus(userId, isOnline) {
     const queryLiteral = {
@@ -102,7 +115,9 @@ async function setUserOnlineStatus(userId, isOnline) {
 
     // add record to the capped collection UpdateUserOnlineStatus monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in user online status
-    const affectedUsers  = await getOnlineUsersIdsByContactId(userId);
+    const dbUsers  = await getUsersByContactId(userId);
+    const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
+    //const affectedUsers  = await getOnlineUsersIdsByContactId(userId);
     console.log(`services.database.users.setUserOnlineStatus -> userId: ${JSON.stringify(userId)}`);
     console.log(`services.database.users.setUserOnlineStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
     const docUpdateUserOnlineStatus = new UpdateUserOnlineStatus({
@@ -136,6 +151,22 @@ async function isUserOnline(email) {
     return dbResult && !!dbResult.isOnline;
 }
 
+// convert list of users emails to dbUsers with _id field
+async function usersEmailsToDbUsers(usersEmails) {
+    let dbUsers = [];
+    if (Array.isArray(usersEmails)) {
+        const dbUsersPromises = usersEmails.map( async userEmail => {
+            console.log(`services.chats.create -> userEmail: ${userEmail}`);        
+            const dbUser = await User.findOne({email: userEmail.toLowerCase()}).lean().exec();
+            console.log(`services.chats.create -> dbUser: ${JSON.stringify(dbUser)}`);
+            if (!dbUser) throw createError(`services.database.chats.create -> Could not find user by email ${userEmail}`);
+            dbUsers.push(dbUser);
+        });
+        await Promise.all(dbUsersPromises);
+    }
+    return dbUsers;
+}
+
 module.exports = {
     create,
     upsertByEmailStatus,
@@ -144,6 +175,8 @@ module.exports = {
     getByEmailStatus,
     isUserOnline,
     setUserOnlineStatus,
-    getOnlineUsersIdsByContactId,
-    resetAllUsersOnlineStatus
+    getUsersByContactId,
+    //getOnlineUsersIdsByContactId,
+    resetAllUsersOnlineStatus,
+    usersEmailsToDbUsers
 };

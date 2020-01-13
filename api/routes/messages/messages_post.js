@@ -14,9 +14,9 @@ const createInvalidCodeError = () => createCustomError(constants.ERROR_REGISTRAT
 const validateBody = body => {
     if (!body || typeof body !== 'object') return false;
 
-    // only GROUP chats can be created via this endpoint, PRIVATE chats are created automatically when users add contacts
     const schema = Joi.object().keys({ 
-        type: Joi.string().valid(constants.CHAT_TYPE_GROUP).required(),
+        chatGuid: Joi.string().guid().required(),
+        messageText: Joi.string().required()
     }); 
 
     return Joi.validate(body, schema);
@@ -24,38 +24,36 @@ const validateBody = body => {
 
 
 module.exports = function(router) {
-    router.post(`/chats`, authorize, async function(req, res, next) {  
-        console.log(`\nHandling POST request for path /chats, timestamp: ${new Date().toString()}`);
-        console.log(`chats.post -> user from token: ${JSON.stringify(req.user)}`);
-        console.log(`chats.post -> body: ${JSON.stringify(req.body)}`);
+    router.post(`/chat/:guid/messages`, authorize, async function(req, res, next) {  
+        console.log(`\nHandling POST request for path /messages, timestamp: ${new Date().toString()}`);
+        console.log(`messages.post -> user from token: ${JSON.stringify(req.user)}`);
+        const chatGuid = req.params['guid'];
+        console.log(`messages.post -> chatGuid: ${chatGuid}`);
+        console.log(`messages.post -> body: ${JSON.stringify(req.body)}`);
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
-            const message = 'chats.post -> Error validating request body';
+            const message = 'messages.post -> Error validating request body';
             console.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
 
-
-        let dbChat;
         try {
-            const chat = {
-                guid: uuidv4().toLowerCase(),
-                displayName: config.defaultGroupChatDisplayName,
-                type: constants.CHAT_TYPE_GROUP,
-                usersEmails: [req.user.email]
+            const message = {
+                text: req.body.messageText,
+                chatGuid: req.body.chatGuid,
+                authorEmail: req.user.email
             };
-            dbChat = await services.database.chats.create(chat);
+            await services.database.messages.create(message);
         } catch (e) {
-            const message = `chats.post -> Error creating new group chat in the database`;
+            const message = `messages.post -> Error creating new message in the database`;
             console.error(message);
             console.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 
         const result = {
-            status: constants.ERROR_SUCCESS,
-            chat: dbChat
+            status: constants.ERROR_SUCCESS
         };
         res.json(result);
     });

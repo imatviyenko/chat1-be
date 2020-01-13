@@ -10,8 +10,8 @@ const expressApp = require('./expressApp');
 const server = http.createServer(expressApp);
 
 // Initialize WebSocket server instance
-const {onUpgrade, initEvents} = require('./ws');
-server.on('upgrade', onUpgrade);
+const {onWebSocketUpgrade, initEvents} = require('./notifier');
+server.on('upgrade', onWebSocketUpgrade);
 initEvents(); // start listening to events
 
 // Start http server
