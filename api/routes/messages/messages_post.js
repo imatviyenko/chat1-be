@@ -24,7 +24,7 @@ const validateBody = body => {
 
 
 module.exports = function(router) {
-    router.post(`/chat/:guid/messages`, authorize, async function(req, res, next) {  
+    router.post(`/chats/:guid/messages`, authorize, async function(req, res, next) {  
         console.log(`\nHandling POST request for path /messages, timestamp: ${new Date().toString()}`);
         console.log(`messages.post -> user from token: ${JSON.stringify(req.user)}`);
         const chatGuid = req.params['guid'];
@@ -42,7 +42,7 @@ module.exports = function(router) {
             const message = {
                 text: req.body.messageText,
                 chatGuid: req.body.chatGuid,
-                authorEmail: req.user.email
+                authorEmail: req.user.email.toLowerCase()
             };
             await services.database.messages.create(message);
         } catch (e) {

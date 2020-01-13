@@ -16,8 +16,8 @@ const schema = new mongoose.Schema(
       {
         _id: { type : mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },
         email: { type : String, index: true, required: true},
-        lastReadMessageTimestamp: { type : Date }, // all messages before this date have been read by user
-        deletedMessagesCutoffTimestamp: {type: Data} // all messages before this date have been delete for this user
+        lastReadMessageSequenceNumber: {type: Number}, // all messages before this sequence number have been read by user
+        deletedMessagesSequenceNumber: {type: Number} // all messages before this sequence number have been deleted for this user and should not be returned
       }
     ]
   },

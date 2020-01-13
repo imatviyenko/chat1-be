@@ -10,7 +10,13 @@ const schemaOptions = {
 const schema = new mongoose.Schema(
   {
     chatGuid: { type: String, index: true, required: true },
-    affectedUsers: [{ type : mongoose.Schema.Types.ObjectId, ref: 'User' }]
+    affectedUsers: [
+      {
+        _id: { type : mongoose.Schema.Types.ObjectId, required: true },
+        email: { type : String, required: true},
+        isOnline: {type: Boolean}
+      }
+    ]
   },
   schemaOptions
 );

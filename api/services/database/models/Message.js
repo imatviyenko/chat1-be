@@ -8,6 +8,7 @@ const schemaOptions = {
 
 const schema = new mongoose.Schema(
   {
+    sequenceNumber: {type: Number, required: true, index: true},
     text: { type: String, required: true },
     chatGuid: { type: String, required: true, index: true },
     authorEmail: { type: String, required: true }
@@ -15,7 +16,7 @@ const schema = new mongoose.Schema(
   schemaOptions
 );
 
-schema.index({ createdAt: 1 }); // schema level index on the automatically provisioned createdAt field
+//schema.index({ createdAt: 1 }); // schema level index on the automatically provisioned createdAt field
 
 var model = mongoose.model('Message', schema);
 module.exports = model;

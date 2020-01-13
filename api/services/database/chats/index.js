@@ -22,7 +22,7 @@ async function getByGuid(chatGuid) {
         "guid": chatGuid
     };
 
-    const query = Chat.find(queryLiteral);
+    const query = Chat.findOne(queryLiteral);
     return query.lean().exec();
 }
 

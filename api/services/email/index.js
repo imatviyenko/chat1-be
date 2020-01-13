@@ -34,7 +34,28 @@ async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail)
 }
 
 
+async function sendNewMessagesNotification(userEmail, authorEmail, chatType, chatDisplayName) {
+    const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
+    const linkUrl = frontEndBaseUrl;
+    const _chatName = chatType === constants.CHAT_TYPE_PRIVATE ? 
+        `private chat with user ${authorEmail}`
+        :
+        `group chat ${chatDisplayName}`
+    console.log('*************************************************');
+    console.log(`You got new messages in ${_chatName}`);
+    console.log(`Login to the chat system to read the messages:`);
+    console.log(`sendNewMessagesNotification -> linkUrl: ${linkUrl}`);
+    console.log('*************************************************');
+
+    const result = {status: constants.ERROR_SUCCESS};
+    return new Promise( (resolve, reject) => {
+        setTimeout(resolve(result), timeoutInSeconds * 1000);
+    });
+
+}
+
 module.exports = {
     sendConfirmEmailLink,
-    sendRegistrationRequest
+    sendRegistrationRequest,
+    sendNewMessagesNotification
 };

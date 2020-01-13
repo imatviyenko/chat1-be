@@ -84,10 +84,9 @@ const initWatchers = () => {
             
             case 'insert':
                 const eventData = {
-                    chatGuid: data.fullDocument.chatGuid,
-                    affectedUsers: data.fullDocument.affectedUsers
+                    ...data.fullDocument
                 };
-                const event = constants.EVENT_CHAT_UPDATED;
+                const event = constants.EVENT_CHAT_NEW_MESSAGES;
                 eventEmmiterWatcher.emit(event, eventData);
                 return;
         }

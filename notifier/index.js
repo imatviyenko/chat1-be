@@ -48,23 +48,32 @@ wss.on('connection', async (ws, request) => {
     */
 });
 
-const brodcastMessageToAffectedUsers = (wsMessage, affectedUsers) => {
+const brodcastMessageToAffectedUsers = async (wsMessage, affectedUsers) => {
     if (Array.isArray(affectedUsers)) {
-        affectedUsers.forEach( affectedUser => {
+        affectedUsers.forEach( async affectedUser => {
+            console.log(`notifier.brodcastMessageToAffectedUsers -> affectedUser: ${JSON.stringify(affectedUser)}`);
             if (affectedUser.isOnline) {
                 const ws = openSockets[affectedUser._id];
-                if (ws) ws.send(JSON.stringify(wsMessage));
+                if (ws) await ws.send(JSON.stringify(wsMessage));
             }
         });
     }
 };
 
 
-const notifyOfflineUsers = (wsMessage, affectedUsers) => {
+const notifyOfflineUsersUnreadMessages = (chatType, chatDisplayName, authorEmail, affectedUsers) => {
+    console.log(`notifyOfflineUsersUnreadMessages -> chatType: ${chatType}, chatDisplayName: ${chatDisplayName}, authorEmail: ${authorEmail}`);
     if (Array.isArray(affectedUsers)) {
         affectedUsers.forEach( affectedUser => {
-            if (!affectedUser.isOnline) {
-                // TODO: send email to offline user
+            if (!affectedUser.isOnline && affectedUser.email.toLowerCase() !== authorEmail.toLowerCase()) {
+                // send email to offline user
+                try {
+                    console.log(`notifyOfflineUsersUnreadMessages -> affectedUser.email: ${affectedUser.email}`);
+                    services.email.notifyOfflineUserUnreadMessages(affectedUser.email, authorEmail, chatType, chatDisplayName); // call async function without await
+                } catch (e) {
+                    console.error(`notifyOfflineUsersUnreadMessages -> error:`);
+                    console.error(e);
+                };
             }
         });
     }
@@ -108,14 +117,17 @@ const initEvents = () => {
         brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
     });
 
-    eventEmmiterWatcher.on(constants.EVENT_CHAT_UPDATED, data => {
-        console.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_UPDATED -> data: ${JSON.stringify(data)}`);
+    eventEmmiterWatcher.on(constants.EVENT_CHAT_NEW_MESSAGES, data => {
+        console.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_NEW_MESSAGES -> data: ${JSON.stringify(data)}`);
         const wsMessage = {
             event: constants.EVENT_CHAT_NEW_MESSAGES,
-            data: data.chat
+            data: {
+                chatGuid: data.chatGuid,
+                sequenceNumber: data.sequenceNumber
+            }
         };
         brodcastMessageToAffectedUsers(wsMessage, data.affectedUsers);
-        notifyOfflineUsers(wsMessage, data.affectedUsers);
+        notifyOfflineUsersUnreadMessages(data.chatType, data.chatDisplayName, data.authorEmail, data.affectedUsers);
     });
 }
 
@@ -138,7 +150,7 @@ async function onWebSocketUpgrade(request, socket, head) {
                 }
             }
         } catch (e) {
-            console.error(`onWebSocketUpgrade -> error: ${JSON.stringify(e)}`);
+            console.error(`onWebSocketUpgrade -> error:`);
             console.error(e);
         }
     }

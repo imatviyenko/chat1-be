@@ -9,9 +9,10 @@ const config = {
     jwtLifetimeSeconds: 86400, // auth token is valid for 24 hours
     defaultPrivateChatDisplayName: 'Private chat',
     defaultGroupChatDisplayName: 'Group chat',
-    messageTimestampPrecisionSeconds: 60, // allowed time error for message timestamps - take this value into account when selecting messages for 'after' and 'before' ranges
-    dbQueryResultCountLimit: 1000 // limit the max number for returned messages
-
+    //messageTimestampPrecisionSeconds: 60, // allowed time error for message timestamps - take this value into account when selecting messages for 'after' and 'before' ranges
+    dbQueryResultCountLimit: 1000, // limit the max number for returned messages
+    returnUnfilteredMessagesThreshold: 5, // if the filtered datbase query returns less than this number, return top returnUnfilteredMessagesLimit messages without filters
+    returnUnfilteredMessagesLimit: 10, // if the filtered datbase query returns less returnUnfilteredMessagesThreshold, return this number of messages without filters
 };
 
 module.exports = config;
