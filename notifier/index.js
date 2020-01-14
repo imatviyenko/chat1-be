@@ -69,7 +69,7 @@ const notifyOfflineUsersUnreadMessages = (chatType, chatDisplayName, authorEmail
                 // send email to offline user
                 try {
                     console.log(`notifyOfflineUsersUnreadMessages -> affectedUser.email: ${affectedUser.email}`);
-                    services.email.notifyOfflineUserUnreadMessages(affectedUser.email, authorEmail, chatType, chatDisplayName); // call async function without await
+                    services.email.sendNewMessagesNotification(affectedUser.email, authorEmail, chatType, chatDisplayName); // call async function without await
                 } catch (e) {
                     console.error(`notifyOfflineUsersUnreadMessages -> error:`);
                     console.error(e);
