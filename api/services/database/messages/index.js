@@ -45,11 +45,9 @@ async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNum
     let sequenceNumberFilter = null;
     const dbChat = await chats.getByGuid(chatGuid);
     const dbChatUser = dbChat.users.find( u => u.email.toLowerCase() === userEmail.toLowerCase());
-    const chatLastReadMessageSequenceNumber = dbChatUser.lastReadMessageSequenceNumber;
     const chatDeletedMessagesSequenceNumber = dbChatUser.deletedMessagesSequenceNumber;
     console.log(`services.messages.getMessages -> dbChat: ${JSON.stringify(dbChat)}`);
     console.log(`services.messages.getMessages -> dbChatUser: ${JSON.stringify(dbChatUser)}`);
-    console.log(`services.messages.getMessages -> chatLastReadMessageSequenceNumber: ${chatLastReadMessageSequenceNumber}`);
     console.log(`services.messages.getMessages -> chatDeletedMessagesSequenceNumber: ${chatDeletedMessagesSequenceNumber}`);
 
     if (sequenceNumberAfter) {
@@ -63,15 +61,6 @@ async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNum
     };
 
 
-    // if both sequenceNumberAfter and sequenceNumberBefore are null, than means this is the first request from the front-end
-    // in this case we must return all messages after chat.lastReadMessageTimestamp for the calling user
-    if (!sequenceNumberAfter && !sequenceNumberBefore && chatLastReadMessageSequenceNumber) {
-        sequenceNumberFilter = sequenceNumberFilter || {};
-        sequenceNumberFilter['$gt'] = chatLastReadMessageSequenceNumber;
-    }
-
-
-    // make sure we return only messages created after chatDeletedMessagesSequenceNumber for the calling user
     if (chatDeletedMessagesSequenceNumber) {
         if (sequenceNumberFilter && sequenceNumberFilter['$gt']) {
             sequenceNumberFilter['$gt'] = chatDeletedMessagesSequenceNumber > sequenceNumberFilter['$gt'] ?
@@ -88,17 +77,64 @@ async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNum
     const queryLiteral = {
         chatGuid
     };
-    if (sequenceNumberFilter) queryLiteral['sequenceNumber'] = sequenceNumberFilter;
     
-    console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
-    const query = Message.find(queryLiteral);
-    const filteredMessages =  await query.lean().sort({ $natural: -1 }).limit(config.dbQueryResultCountLimit).exec();
+    let query;
+    let messages;
 
-    if (filteredMessages.length >= config.returnUnfilteredMessagesThreshold) return filteredMessages;
+    // if this is a paged request for the most recent messages with no sequenceNumberAfter parameter and no sequenceNumberBefore parameter (first client call)
+    if (!sequenceNumberAfter && !sequenceNumberBefore) {
+        console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+        query = Message.find(queryLiteral);
+        // get at most config.dbQueryResultCountLimit messages with no filtering on the sequenceNumber field
+        messages = await query.lean().sort({ $natural: -1 }).limit(config.dbQueryResultCountLimit).exec(); 
+        console.log(`services.messages.getMessages -> config.dbQueryResultCountLimit: ${config.dbQueryResultCountLimit}`);
+        console.log(`services.messages.getMessages -> messages.length: ${messages.length}`);
 
-    // if we got here, this means that the filtered query yielded less than config.returnUnfilteredMessagesThreshold messages
-    // in this case to improve user expirience we fetch top latest config.returnUnfilteredMessagesLimit messages for the current chat without additional filters
-    return Message.find({chatGuid}).lean().sort({ $natural: -1 }).limit(config.returnUnfilteredMessagesLimit).exec();
+        // if we got config.dbQueryResultCountLimit number of messages then we return the messages and indicate that we probably have more older messages in the database moreDataAvailable = true
+        // if we got less than this number of messages, then we have no more earlier messages and we return moreDataAvailable = false
+        return {
+            messages,
+            moreDataAvailable: (messages.length === config.dbQueryResultCountLimit)
+        };
+    }
+
+
+    // if this is a paged request for past messages BEFORE a certain sequence numnber
+    if (sequenceNumberBefore && !sequenceNumberAfter) {
+        queryLiteral['sequenceNumber'] = {'$lt': sequenceNumberBefore};
+        console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+        query = Message.find(queryLiteral);
+        // get at most config.dbQueryResultCountLimit messages with sequence numbers ealrier than sequenceNumberBefore
+        messages = await query.lean().sort({ $natural: -1 }).limit(config.dbQueryResultCountLimit).exec(); 
+        console.log(`services.messages.getMessages -> config.dbQueryResultCountLimit: ${config.dbQueryResultCountLimit}`);
+        console.log(`services.messages.getMessages -> messages.length: ${messages.length}`);
+
+        // if we got config.dbQueryResultCountLimit number of messages then we return the messages and indicate that we probably have more older messages in the database moreDataAvailable = true
+        // if we got less than this number of messages, then we have no more earlier messages and we return moreDataAvailable = false
+        return {
+            messages,
+            moreDataAvailable: (messages.length === config.dbQueryResultCountLimit)
+        };
+    } 
+
+
+    // if this is a request for messages AFTER a certain sequence number (delta since the last call) 
+    // OR
+    // a ranged query for messages with sequence number AFTER one value and BEFORE another value
+    if (sequenceNumberAfter) {
+        queryLiteral['sequenceNumber'] = {'$gt': sequenceNumberAfter};
+        if (sequenceNumberBefore) queryLiteral['sequenceNumber']['$lt'] = sequenceNumberBefore;
+
+        console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+        query = Message.find(queryLiteral);
+        // get all messages no matter how many we have - no limit is applied
+        messages = await query.lean().sort({ $natural: -1 }).exec(); 
+
+        // return message but do not return any value for moreDataAvailable
+        return {
+            messages
+        };
+    }
 }
 
 
