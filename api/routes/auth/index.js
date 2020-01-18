@@ -21,8 +21,8 @@ module.exports = function(router) {
 
     router.post(`/auth`, async function(req, res, next) {  
         console.log(`\nHandling POST request for path /auth, timestamp: ${new Date().toString()}`);
-        console.log(`auth.post -> req.body:`);
-        console.log(req.body);
+        //console.log(`auth.post -> req.body:`);
+        //console.log(req.body);
 
         let result;
 

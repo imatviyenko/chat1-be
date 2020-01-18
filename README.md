@@ -7,6 +7,10 @@ Node/Express back end for demo chat app
 - Push to the "master" branch on github
 - Azure App Service CI will deploy the latest build automatically
 
+## Debug on Azure
+- Make sure that "Application Logging (Filesystem)" setting is set to "On" and the level is set to "Verbose" in the App settings -> Monitoring -> App Service logs section
+- Open this URL in browser and click on "stderr" link  to see the errors (console.error output), "stdout" link for console.log output for the current date: https://webappchat1.scm.azurewebsites.net/vfs/LogFiles/Application/index.html
+
 ## Run locally
 1. Install MongoDB on local dev machine
 2. Configure a single node replica set (more details here: https://docs.mongodb.com/manual/tutorial/deploy-replica-set, all steps below are for MongoDB on Windows installed as a service):
