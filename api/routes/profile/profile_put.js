@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 
 const constants = require('../../../constants');
@@ -24,28 +26,28 @@ const validateBody = body => {
 
 module.exports = function(router) {
     router.put(`/profile`, authorize, async function(req, res, next) {  
-        console.log(`\nHandling PUT request for path /profile, timestamp: ${new Date().toString()}`);
-        console.log(`profile.put -> user from token: ${JSON.stringify(req.user)}`);
-        console.log(`profile.put -> req.body: ${JSON.stringify(req.body)}`);
+        logger.log(`Handling PUT request for path /profile, timestamp: ${new Date().toString()}`);
+        logger.log(`profile.put -> user from token: ${JSON.stringify(req.user)}`);
+        logger.log(`profile.put -> req.body: ${JSON.stringify(req.body)}`);
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
             const message = 'profile.put -> Error validating request body';
-            console.log(message);
+            logger.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
-        console.log(`profile.put -> req.body validated succcessfully`);
+        logger.log(`profile.put -> req.body validated succcessfully`);
 
 
         const profile = req.body;
         let updatedProfile;
         try {
             updatedProfile = await services.database.profile.update(profile);
-            console.log(`profile.put -> updatedProfile: ${JSON.stringify(updatedProfile)}`);
+            logger.log(`profile.put -> updatedProfile: ${JSON.stringify(updatedProfile)}`);
         } catch (e) {
             const message = `profile.put -> Error updating profile with email ${profile.email} in the database`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 

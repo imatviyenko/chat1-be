@@ -1,3 +1,5 @@
+const logger = require('../logger');
+
 const config = require('../config');
 const services = require('../api/services');
 const constants = require('../constants');

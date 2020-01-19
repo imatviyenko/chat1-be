@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 
 const constants = require('../../../constants');
@@ -20,9 +22,9 @@ const validateBody = body => {
 module.exports = function(router) {
 
     router.post(`/auth`, async function(req, res, next) {  
-        console.log(`\nHandling POST request for path /auth, timestamp: ${new Date().toString()}`);
-        //console.log(`auth.post -> req.body:`);
-        //console.log(req.body);
+        logger.log(`Handling POST request for path /auth, timestamp: ${new Date().toString()}`);
+        //logger.log(`auth.post -> req.body:`);
+        //logger.log(req.body);
 
         let result;
 
@@ -36,11 +38,11 @@ module.exports = function(router) {
         try {
             // find the user with matching email and USER_STATUS_ACTIVE status
             dbUser = await services.database.users.getByEmailStatus(req.body.email, constants.USER_STATUS_ACTIVE);
-            console.log(`auth.post -> dbUser: ${JSON.stringify(dbUser)}`);
+            logger.log(`auth.post -> dbUser: ${JSON.stringify(dbUser)}`);
         } catch (e) {
             const message = `auth.post -> Error finding user in the database`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_GENERIC_SERVER_FAILURE, 500, e));
         };
 

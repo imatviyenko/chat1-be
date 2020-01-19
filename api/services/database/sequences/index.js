@@ -1,3 +1,5 @@
+const logger = require('../../../../logger');
+
 const CounterModel = require('../models/Counter');
 
 async function getNextSequenceNumber(sequenceName) {

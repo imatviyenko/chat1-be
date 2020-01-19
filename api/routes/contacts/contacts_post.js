@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 const uuidv4 = require('uuid/v4');
 
@@ -22,10 +24,10 @@ const validateBody = body => {
 module.exports = function(router) {
 
     router.post(`/contacts`, authorize, async function(req, res, next) {  
-        console.log(`\nHandling POST request for path /contacts, timestamp: ${new Date().toString()}`);
-        console.log(`contacts.post -> user from token: ${JSON.stringify(req.user)}`);
-        console.log(`contacts.post -> req.body:`);
-        console.log(req.body);
+        logger.log(`Handling POST request for path /contacts, timestamp: ${new Date().toString()}`);
+        logger.log(`contacts.post -> user from token: ${JSON.stringify(req.user)}`);
+        logger.log(`contacts.post -> req.body:`);
+        logger.log(req.body);
 
         let result;
 
@@ -46,7 +48,7 @@ module.exports = function(router) {
         let dbChat;
         try {
             let contactDbUser = await services.database.users.getByEmailStatus(contactEmail);
-            console.log(`contacts.post -> contactDbUser1: ${JSON.stringify(contactDbUser)}`);
+            logger.log(`contacts.post -> contactDbUser1: ${JSON.stringify(contactDbUser)}`);
 
             if (!contactDbUser) {
                 // create new user record for the contact with USER_STATUS_REGISTRATION_PENDING status and only email field populated
@@ -55,21 +57,21 @@ module.exports = function(router) {
                     status: constants.USER_STATUS_REGISTRATION_PENDING
                 };
                 contactDbUser =  await services.database.users.create(contactUser);
-                console.log(`contacts.post -> contactDbUser2: ${JSON.stringify(contactDbUser)}`);
+                logger.log(`contacts.post -> contactDbUser2: ${JSON.stringify(contactDbUser)}`);
 
                 // send registration request to the contact's email
                 try {
                     await services.email.sendRegistrationRequest(req.user.email, req.user.displayName, contactEmail);
                 } catch (e) {
                     const message = `contacts.post -> Error sending registration request to contact email ${contactEmail}, user record created and may need to be deleted`;
-                    console.error(message);
-                    console.error(e);
+                    logger.error(message);
+                    logger.error(e);
                     return next(createError(message, constants.ERROR_REGISTRATION_EMAIL_SENDING_FAILURE, 500, e));
                 }
             }
             
             // Add contact to the user record in the database
-            console.log(`contacts.post -> contactDbUser3: ${JSON.stringify(contactDbUser)}`);
+            logger.log(`contacts.post -> contactDbUser3: ${JSON.stringify(contactDbUser)}`);
             dbContact = await services.database.contacts.add(req.user.email, contactDbUser);
 
             // add the current user to list of contact of the contact (if User1 adds User2 as a contact, then User2 will have User1 in his contacts as well)
@@ -86,8 +88,8 @@ module.exports = function(router) {
             dbChat = await services.database.chats.create(chat);
         } catch (e) {
             const message = `contacts.post -> Error adding contact`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 

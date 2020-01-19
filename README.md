@@ -14,7 +14,7 @@ Node/Express back end for demo chat app
 
 ## Debug on Azure
 - Make sure that "Application Logging (Filesystem)" setting is set to "On" and the level is set to "Verbose" in the App settings -> Monitoring -> App Service logs section
-- Open this URL in browser and click on "stderr" link  to see the errors (console.error output), "stdout" link for console.log output for the current date: https://webappchat1.scm.azurewebsites.net/vfs/LogFiles/Application/index.html
+- Open this URL in browser and click on "stderr" link  to see the errors (logger.error output), "stdout" link for logger.log output for the current date: https://webappchat1.scm.azurewebsites.net/vfs/LogFiles/Application/index.html
 
 ## Run locally
 1. Install MongoDB on local dev machine

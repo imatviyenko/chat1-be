@@ -1,3 +1,5 @@
+const logger = require('./logger');
+
 const express = require('express');
 const cors = require('cors');
 

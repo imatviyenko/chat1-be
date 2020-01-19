@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 
 const constants = require('../../../constants');
@@ -27,32 +29,32 @@ const validateBody = body => {
 
 module.exports = function(router) {
     router.put(`/chats/:guid`, authorize, async function(req, res, next) {  
-        console.log(`\nHandling PUT request for path /chats/guid, timestamp: ${new Date().toString()}`);
+        logger.log(`Handling PUT request for path /chats/guid, timestamp: ${new Date().toString()}`);
 
         const chatGuid = req.params['guid'];
-        console.log(`chats.put -> chatGuid: ${chatGuid}`);
+        logger.log(`chats.put -> chatGuid: ${chatGuid}`);
 
-        console.log(`chats.put -> req.body:`);
-        console.log(req.body);
+        logger.log(`chats.put -> req.body:`);
+        logger.log(req.body);
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
             const message = 'chats.put -> Error validating request body';
-            console.log(message);
+            logger.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
-        console.log(`chats.put -> req.body validated succcessfully`);
+        logger.log(`chats.put -> req.body validated succcessfully`);
 
 
         const chat = req.body;
         let updatedChat;
         try {
             updatedChat = await services.database.chats.updateByGuid(chatGuid, chat);
-            console.log(`chats.put -> updatedChat: ${JSON.stringify(updatedChat)}`);
+            logger.log(`chats.put -> updatedChat: ${JSON.stringify(updatedChat)}`);
         } catch (e) {
             const message = `chats.put -> Error updating chat with guid ${chatGuid} in the database`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 

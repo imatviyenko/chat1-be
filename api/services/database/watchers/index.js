@@ -1,3 +1,5 @@
+const logger = require('../../../../logger');
+
 const constants = require('../../../../constants');
 const users = require('../users');
 const chats = require('../chats');
@@ -11,7 +13,7 @@ const {eventEmmiterWatcher} = require('../../../events');
 const initWatchers = () => {
 
     UpdateUserOnlineStatus.watch().on('change', async data => {
-        console.log(`watchers.UpdateUserOnlineStatus.change -> data: ${JSON.stringify(data)}`);
+        logger.log(`watchers.UpdateUserOnlineStatus.change -> data: ${JSON.stringify(data)}`);
         const operationType = data && data.operationType;
         if (!operationType) return;
 
@@ -33,7 +35,7 @@ const initWatchers = () => {
     
 
     UpdateUserProfileProperties.watch().on('change', async data => {
-        console.log(`watchers.UpdateUserProfileProperties.change -> data: ${JSON.stringify(data)}`);
+        logger.log(`watchers.UpdateUserProfileProperties.change -> data: ${JSON.stringify(data)}`);
         const operationType = data && data.operationType;
         if (!operationType) return;
 
@@ -55,7 +57,7 @@ const initWatchers = () => {
 
 
     UpdateChatProperties.watch().on('change', async data => {
-        console.log(`watchers.UpdateChatProperties.change -> data: ${JSON.stringify(data)}`);
+        logger.log(`watchers.UpdateChatProperties.change -> data: ${JSON.stringify(data)}`);
         const operationType = data && data.operationType;
         if (!operationType) return;
 
@@ -76,7 +78,7 @@ const initWatchers = () => {
     });
 
     UpdateChatMessages.watch().on('change', async data => {
-        console.log(`watchers.UpdateChatMessages.change -> data: ${JSON.stringify(data)}`);
+        logger.log(`watchers.UpdateChatMessages.change -> data: ${JSON.stringify(data)}`);
         const operationType = data && data.operationType;
         if (!operationType) return;
 

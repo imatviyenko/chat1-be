@@ -1,3 +1,5 @@
+const logger = require('../logger');
+
 const {serializeError} = require('serialize-error');
 const constants = require('../constants');
 
@@ -21,7 +23,7 @@ function createCustomError(name, message, resultStatus = constants.ERROR_GENERIC
 
 
 function errorHandler(error, req, res, next) {
-    console.error(`Error handling middleware invoked, req.url: ${req.url}, error: ${errorToString(error)}`);
+    logger.error(`Error handling middleware invoked, req.url: ${req.url}, error: ${errorToString(error)}`);
     return res
         .status(error.httpStatus || 500)
         .json({

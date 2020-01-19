@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 const uuidv4 = require('uuid/v4');
 
@@ -25,14 +27,14 @@ const validateBody = body => {
 
 module.exports = function(router) {
     router.post(`/chats`, authorize, async function(req, res, next) {  
-        console.log(`\nHandling POST request for path /chats, timestamp: ${new Date().toString()}`);
-        console.log(`chats.post -> user from token: ${JSON.stringify(req.user)}`);
-        console.log(`chats.post -> body: ${JSON.stringify(req.body)}`);
+        logger.log(`Handling POST request for path /chats, timestamp: ${new Date().toString()}`);
+        logger.log(`chats.post -> user from token: ${JSON.stringify(req.user)}`);
+        logger.log(`chats.post -> body: ${JSON.stringify(req.body)}`);
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
             const message = 'chats.post -> Error validating request body';
-            console.log(message);
+            logger.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
 
@@ -48,8 +50,8 @@ module.exports = function(router) {
             dbChat = await services.database.chats.create(chat);
         } catch (e) {
             const message = `chats.post -> Error creating new group chat in the database`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500));
         };
 

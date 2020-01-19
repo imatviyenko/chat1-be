@@ -1,3 +1,5 @@
+const logger = require('../../../../logger');
+
 const constants = require('../../../../constants');
 const User = require('../models/User');
 const UpdateUserProfileProperties = require('../models/UpdateUserProfileProperties');
@@ -38,7 +40,7 @@ async function update(profile) {
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in user profile properties
     const dbUsers  = await getUsersByContactId(dbUser._id);
     const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
-    console.log(`services.database.users.upsertByEmailStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
+    logger.log(`services.database.users.upsertByEmailStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
     const docUpdateUserProfileProperties = new UpdateUserProfileProperties({
         userId: dbUser._id,
         affectedUsers

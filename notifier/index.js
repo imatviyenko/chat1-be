@@ -1,3 +1,5 @@
+const logger = require('../logger');
+
 const WebSocket = require('ws');
 
 const constants = require('../constants');
@@ -20,44 +22,44 @@ wss.on('connection', async (ws, request) => {
     openSockets[request.user._id] = ws; // store reference for the active web socket for user with the specified _id in a hash table
 
     ws.on('close', async () => {
-        console.log(`socket closed for user with email ${request.user.email}`);
+        logger.log(`socket closed for user with email ${request.user.email}`);
         delete openSockets[request.user._id];
 
         try {
             await services.database.users.setUserOnlineStatus(request.user._id, false);
         } catch(e) {
-            console.error(`Error updating user online status in database:`);
-            console.error(e);
+            logger.error(`Error updating user online status in database:`);
+            logger.error(e);
         };
     });
 
     try {
         await services.database.users.setUserOnlineStatus(request.user._id, true);
     } catch(e) {
-        console.error(`Error updating user online status in database:`);
-        console.error(e);
+        logger.error(`Error updating user online status in database:`);
+        logger.error(e);
     };
 
 
     ws.on('message', async messageString => {
         if (messageString) {
-            console.log(`ws.on.message -> messageString: ${messageString}`);
+            logger.log(`ws.on.message -> messageString: ${messageString}`);
     
             try {
                 const message = JSON.parse(messageString);
                 if (message && message.token) {
                     const jwtPayload = services.crypto.decodeAuthToken(message.token);
-                    console.log(`ws.on.message -> jwtPayload.sub: ${jwtPayload && jwtPayload.sub}`);
+                    logger.log(`ws.on.message -> jwtPayload.sub: ${jwtPayload && jwtPayload.sub}`);
                     if (jwtPayload) {
                         await services.database.users.updateUserOnlinePingTimestamp(jwtPayload.sub); // sub field of jwt token should contain user email
                     }
                 }
             } catch (e) {
-                console.error(`ws.on.message -> error:`);
-                console.error(e);
+                logger.error(`ws.on.message -> error:`);
+                logger.error(e);
             }
         } else {
-            console.error(`ws.on.message -> error: Empty message recieved from the client`);
+            logger.error(`ws.on.message -> error: Empty message recieved from the client`);
         }
     });
 });
@@ -66,7 +68,7 @@ wss.on('connection', async (ws, request) => {
 const brodcastMessageToAffectedUsers = async (wsMessage, affectedUsers) => {
     if (Array.isArray(affectedUsers)) {
         affectedUsers.forEach( async affectedUser => {
-            console.log(`notifier.brodcastMessageToAffectedUsers -> affectedUser: ${JSON.stringify(affectedUser)}`);
+            logger.log(`notifier.brodcastMessageToAffectedUsers -> affectedUser: ${JSON.stringify(affectedUser)}`);
             if (affectedUser.isOnline) {
                 const ws = openSockets[affectedUser._id];
                 if (ws) await ws.send(JSON.stringify(wsMessage));
@@ -77,17 +79,17 @@ const brodcastMessageToAffectedUsers = async (wsMessage, affectedUsers) => {
 
 
 const notifyOfflineUsersUnreadMessages = (chatType, chatDisplayName, authorEmail, affectedUsers) => {
-    console.log(`notifyOfflineUsersUnreadMessages -> chatType: ${chatType}, chatDisplayName: ${chatDisplayName}, authorEmail: ${authorEmail}`);
+    logger.log(`notifyOfflineUsersUnreadMessages -> chatType: ${chatType}, chatDisplayName: ${chatDisplayName}, authorEmail: ${authorEmail}`);
     if (Array.isArray(affectedUsers)) {
         affectedUsers.forEach( affectedUser => {
             if (!affectedUser.isOnline && affectedUser.email.toLowerCase() !== authorEmail.toLowerCase()) {
                 // send email to offline user
                 try {
-                    console.log(`notifyOfflineUsersUnreadMessages -> affectedUser.email: ${affectedUser.email}`);
+                    logger.log(`notifyOfflineUsersUnreadMessages -> affectedUser.email: ${affectedUser.email}`);
                     services.email.sendNewMessagesNotification(affectedUser.email, authorEmail, chatType, chatDisplayName); // call async function without await
                 } catch (e) {
-                    console.error(`notifyOfflineUsersUnreadMessages -> error:`);
-                    console.error(e);
+                    logger.error(`notifyOfflineUsersUnreadMessages -> error:`);
+                    logger.error(e);
                 };
             }
         });
@@ -97,7 +99,7 @@ const notifyOfflineUsersUnreadMessages = (chatType, chatDisplayName, authorEmail
 const initEvents = () => {
     
     eventEmmiterWatcher.on(constants.EVENT_USER_ONLINE, data => {
-        console.log(`ws.eventEmmiterWatcher.on.EVENT_USER_ONLINE -> data: ${JSON.stringify(data)}`);
+        logger.log(`ws.eventEmmiterWatcher.on.EVENT_USER_ONLINE -> data: ${JSON.stringify(data)}`);
         const wsMessage = {
             event: constants.EVENT_USER_ONLINE,
             data: data.user.email
@@ -106,7 +108,7 @@ const initEvents = () => {
     });
 
     eventEmmiterWatcher.on(constants.EVENT_USER_OFFLINE, data => {
-        console.log(`ws.eventEmmiterWatcher.onEVENT_USER_OFFLINE -> data: ${JSON.stringify(data)}`);
+        logger.log(`ws.eventEmmiterWatcher.onEVENT_USER_OFFLINE -> data: ${JSON.stringify(data)}`);
         const wsMessage = {
             event: constants.EVENT_USER_OFFLINE,
             data: data.user.email
@@ -115,7 +117,7 @@ const initEvents = () => {
     });
 
     eventEmmiterWatcher.on(constants.EVENT_USER_PROFILE_UPDATED, data => {
-        console.log(`ws.eventEmmiterWatcher.onEVENT_USER_PROFILE_UPDATED -> data: ${JSON.stringify(data)}`);
+        logger.log(`ws.eventEmmiterWatcher.onEVENT_USER_PROFILE_UPDATED -> data: ${JSON.stringify(data)}`);
         const wsMessage = {
             event: constants.EVENT_USER_PROFILE_UPDATED,
             data: data.user
@@ -124,7 +126,7 @@ const initEvents = () => {
     });    
 
     eventEmmiterWatcher.on(constants.EVENT_CHAT_UPDATED, data => {
-        console.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_UPDATED -> data: ${JSON.stringify(data)}`);
+        logger.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_UPDATED -> data: ${JSON.stringify(data)}`);
         const wsMessage = {
             event: constants.EVENT_CHAT_UPDATED,
             data: data.chat
@@ -133,7 +135,7 @@ const initEvents = () => {
     });
 
     eventEmmiterWatcher.on(constants.EVENT_CHAT_NEW_MESSAGES, data => {
-        console.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_NEW_MESSAGES -> data: ${JSON.stringify(data)}`);
+        logger.log(`ws.eventEmmiterWatcher.onEVENT_CHAT_NEW_MESSAGES -> data: ${JSON.stringify(data)}`);
         const wsMessage = {
             event: constants.EVENT_CHAT_NEW_MESSAGES,
             data: {
@@ -150,23 +152,23 @@ const initEvents = () => {
 
 async function onWebSocketUpgrade(request, socket, head) {
     const token = request.headers && request.headers['sec-websocket-protocol'];
-    console.log(`onWebSocketUpgrade -> token: ${token}`);
+    logger.log(`onWebSocketUpgrade -> token: ${token}`);
 
     let user = null;
     if (token) {
         try {
             const jwtPayload = services.crypto.decodeAuthToken(token);
-            console.log(`onWebSocketUpgrade -> jwtPayload: ${JSON.stringify(jwtPayload)}`);
+            logger.log(`onWebSocketUpgrade -> jwtPayload: ${JSON.stringify(jwtPayload)}`);
             if (jwtPayload) {
                 user = await services.database.users.getByEmailStatus(jwtPayload.sub, constants.USER_STATUS_ACTIVE); // sub field of jwt token should contain user email
-                console.log(`onWebSocketUpgrade -> user: ${JSON.stringify(user)}`);
+                logger.log(`onWebSocketUpgrade -> user: ${JSON.stringify(user)}`);
                 if (!user) {
-                    console.error(`onWebSocketUpgrade -> error: User not found`);
+                    logger.error(`onWebSocketUpgrade -> error: User not found`);
                 }
             }
         } catch (e) {
-            console.error(`onWebSocketUpgrade -> error:`);
-            console.error(e);
+            logger.error(`onWebSocketUpgrade -> error:`);
+            logger.error(e);
         }
     }
   

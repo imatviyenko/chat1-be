@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const bcrypt = require('bcryptjs');
 const jsonwebtoken = require('jsonwebtoken');
 
@@ -27,7 +29,7 @@ function decodeString(encryptedString) {
 }
 
 function getAuthToken(user) {
-    console.log(`services.crypto.getAuthToken -> user: ${JSON.stringify(user)}`);
+    logger.log(`services.crypto.getAuthToken -> user: ${JSON.stringify(user)}`);
     const payload = {
         sub: user.email
     };
@@ -40,13 +42,13 @@ function getAuthToken(user) {
     };
 
     const token = jsonwebtoken.sign(payload, config.serverSecret, options);
-    console.log(`services.crypto.getAuthToken -> token: ${token}`);
+    logger.log(`services.crypto.getAuthToken -> token: ${token}`);
     return token;
     //return `${config.serverSecret}:${user.email}`;
 }
 
 function decodeAuthToken(token) {
-    console.log(`services.crypto.decodeAuthToken -> token: ${token}`);
+    logger.log(`services.crypto.decodeAuthToken -> token: ${token}`);
 
     const options = {
         algorithm: 'HS256',
@@ -57,7 +59,7 @@ function decodeAuthToken(token) {
     
     try {
         const decodedPayload = jsonwebtoken.verify(token, config.serverSecret, options);
-        console.log(`services.crypto.decodeAuthToken -> decodedPayload: ${JSON.stringify(decodedPayload)}`);
+        logger.log(`services.crypto.decodeAuthToken -> decodedPayload: ${JSON.stringify(decodedPayload)}`);
         return decodedPayload;
     } catch (e) {
         return null;

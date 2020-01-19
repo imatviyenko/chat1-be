@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 
 const constants = require('../../../constants');
@@ -22,16 +24,16 @@ const createInvalidCodeError = () => createCustomError(constants.ERROR_REGISTRAT
 module.exports = function(router) {
 
     router.post(`/confirm`, async function(req, res, next) {  
-        console.log(`\nHandling POST request for path /confirm, timestamp: ${new Date().toString()}`);
-        console.log(`confirm.post -> req.body:`);
-        console.log(req.body);
+        logger.log(`Handling POST request for path /confirm, timestamp: ${new Date().toString()}`);
+        logger.log(`confirm.post -> req.body:`);
+        logger.log(req.body);
 
         let result;
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
             const message = 'confirm.post -> Error validating request body';
-            console.log(message);
+            logger.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
 
@@ -43,8 +45,8 @@ module.exports = function(router) {
             if (!emailFromCode) throw createInvalidCodeError();
         } catch (e) {
             const message = `confirm.post -> Error decoding code ${req.body.code}: ${errorToString(e)}`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             const status = e.name == constants.ERROR_REGISTRATION_INVALID_CODE ? constants.ERROR_REGISTRATION_INVALID_CODE : constants.ERROR_GENERIC_SERVER_FAILURE;
             return next(createError(message, status, 403));
         };
@@ -53,9 +55,9 @@ module.exports = function(router) {
         try {
 
             // find the user with USER_STATUS_CONFIRMATION_PENDING status and complete the registration
-            console.log(`confirm.post -> emailFromCode: ${emailFromCode}`);
+            logger.log(`confirm.post -> emailFromCode: ${emailFromCode}`);
             dbUser = await services.database.users.getByEmailStatus(emailFromCode, constants.USER_STATUS_CONFIRMATION_PENDING);
-            console.log(`confirm.post -> dbUser: ${JSON.stringify(dbUser)}`);
+            logger.log(`confirm.post -> dbUser: ${JSON.stringify(dbUser)}`);
 
             if (dbUser) {
                 const user = {
@@ -68,8 +70,8 @@ module.exports = function(router) {
             }
         } catch (e) {
             const message = `confirm.post -> Error updating user in the database`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 

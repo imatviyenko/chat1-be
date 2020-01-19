@@ -1,3 +1,5 @@
+const logger = require('../../../logger');
+
 const Joi = require('joi');
 
 const constants = require('../../../constants');
@@ -25,16 +27,16 @@ const createInvalidCodeError = () => createCustomError(constants.ERROR_REGISTRAT
 module.exports = function(router) {
 
     router.post(`/register`, async function(req, res, next) {  
-        console.log(`\nHandling POST request for path /register, timestamp: ${new Date().toString()}`);
-        console.log(`register.post -> req.body:`);
-        console.log(req.body);
+        logger.log(`Handling POST request for path /register, timestamp: ${new Date().toString()}`);
+        logger.log(`register.post -> req.body:`);
+        logger.log(req.body);
 
         let result;
 
         const validationResult = validateBody(req.body);
         if (validationResult.error) {
             const message = 'register.post -> Error validating request body';
-            console.log(message);
+            logger.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
 
@@ -50,8 +52,8 @@ module.exports = function(router) {
             
         } catch (e) {
             const message = `register.post -> Error decoding code ${req.body.code}: ${errorToString(e)}`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             const status = e.name == constants.ERROR_REGISTRATION_INVALID_CODE ? constants.ERROR_REGISTRATION_INVALID_CODE : constants.ERROR_GENERIC_SERVER_FAILURE;
             return next(createError(message, status, 403));
         };
@@ -63,7 +65,7 @@ module.exports = function(router) {
              };
              const passwordHash = await services.crypto.getPasswordHash(user.password);
              user.passwordHash = passwordHash;
-             console.log(`register.post -> passwordHash: ${passwordHash}`);
+             logger.log(`register.post -> passwordHash: ${passwordHash}`);
 
             // if we extracted email address from the encrypted code we can complete user registration, otherwise his email needs to be confirmed first
             if (emailFromCode) {
@@ -83,8 +85,8 @@ module.exports = function(router) {
             
         } catch (e) {
             const message = `register.post -> Error saving user to the database`;
-            console.error(message);
-            console.error(e);
+            logger.error(message);
+            logger.error(e);
             return next(createError(message, constants.ERROR_DATABASE_FAILURE, 500, e));
         };
 
@@ -94,8 +96,8 @@ module.exports = function(router) {
                 await services.email.sendConfirmEmailLink(user.email, user.displayName);
             } catch (e) {
                 const message = `register.post -> Error sending confirmation link to user email ${user.email}`;
-                console.error(message);
-                console.error(e);
+                logger.error(message);
+                logger.error(e);
                 return next(createError(message, constants.ERROR_REGISTRATION_EMAIL_SENDING_FAILURE, 500, e));
             }
         }

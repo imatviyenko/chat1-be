@@ -1,3 +1,5 @@
+const logger = require('../../../../logger');
+
 const constants = require('../../../../constants');
 const User = require('../models/User');
 const UpdateUserOnlineStatus = require('../models/UpdateUserOnlineStatus');
@@ -9,7 +11,7 @@ async function create(user) {
         email: user.email.toLowerCase()
     });
 
-    console.log(`services.database.users.create -> user: ${JSON.stringify(user)}`);
+    logger.log(`services.database.users.create -> user: ${JSON.stringify(user)}`);
     return docUser.save();
 }
 
@@ -20,13 +22,13 @@ async function upsertByEmailStatus(filterEmail, filterStatus, user) {
     if (filterStatus) queryLiteral.status = filterStatus;
 
     const dbUser = await _upsert(queryLiteral, user);
-    console.log(`services.database.users.upsertByEmailStatus -> dbUser: ${JSON.stringify(dbUser)}`);
+    logger.log(`services.database.users.upsertByEmailStatus -> dbUser: ${JSON.stringify(dbUser)}`);
 
     // add record to the capped collection UpdateUserProfileProperties monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in user profile properties
     const dbUsers  = await getUsersByContactId(dbUser._id);
     const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
-    console.log(`services.database.users.upsertByEmailStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
+    logger.log(`services.database.users.upsertByEmailStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
     const docUpdateUserProfileProperties = new UpdateUserProfileProperties({
         userId: dbUser._id,
         affectedUsers
@@ -61,7 +63,7 @@ async function getByEmailStatus(filterEmail, filterStatus) {
         email: filterEmail.toLowerCase()
     };
     if (filterStatus) queryLiteral.status = filterStatus;
-    console.log(`getByEmailStatus -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+    logger.log(`getByEmailStatus -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
 
     const query = User.findOne(queryLiteral);
     return query.lean().exec();
@@ -75,7 +77,7 @@ async function getUsersByContactId(contactUserId) {
 
     const query = User.find(queryLiteral); // get only _id and isOnline property of all matching users
     const dbResult = await query.lean().exec();
-    console.log(`getUsersByContactId -> dbResult: ${JSON.stringify(dbResult)}`);
+    logger.log(`getUsersByContactId -> dbResult: ${JSON.stringify(dbResult)}`);
     return dbResult;
 
 }
@@ -96,8 +98,8 @@ async function setUserOnlineStatus(userId, isOnline) {
     const dbUsers  = await getUsersByContactId(userId);
     const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
     //const affectedUsers  = await getOnlineUsersIdsByContactId(userId);
-    console.log(`services.database.users.setUserOnlineStatus -> userId: ${JSON.stringify(userId)}`);
-    console.log(`services.database.users.setUserOnlineStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
+    logger.log(`services.database.users.setUserOnlineStatus -> userId: ${JSON.stringify(userId)}`);
+    logger.log(`services.database.users.setUserOnlineStatus -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
     const docUpdateUserOnlineStatus = new UpdateUserOnlineStatus({
         userId,
         isOnline,
@@ -146,9 +148,9 @@ async function usersEmailsToDbUsers(usersEmails) {
     let dbUsers = [];
     if (Array.isArray(usersEmails)) {
         const dbUsersPromises = usersEmails.map( async userEmail => {
-            console.log(`services.users.usersEmailsToDbUsers -> userEmail: ${userEmail}`);        
+            logger.log(`services.users.usersEmailsToDbUsers -> userEmail: ${userEmail}`);        
             const dbUser = await User.findOne({email: userEmail.toLowerCase()}).lean().exec();
-            console.log(`services.users.usersEmailsToDbUsers -> dbUser: ${JSON.stringify(dbUser)}`);
+            logger.log(`services.users.usersEmailsToDbUsers -> dbUser: ${JSON.stringify(dbUser)}`);
             if (!dbUser) throw createError(`services.users.usersEmailsToDbUsers -> Could not find user by email ${userEmail}`);
             dbUsers.push(dbUser);
         });

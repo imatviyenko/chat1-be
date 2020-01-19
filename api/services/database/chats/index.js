@@ -1,3 +1,5 @@
+const logger = require('../../../../logger');
+
 const constants = require('../../../../constants');
 const {createError} = require('../../../../errors');
 const Chat = require('../models/Chat');
@@ -40,10 +42,10 @@ async function create(chat) {
     });
     const dbChat = await docChat.save();
 
-    console.log(`services.chats.create -> chat:`);
-    console.log(JSON.stringify(chat));
-    console.log(`services.chats.create -> dbChat:`);
-    console.log(JSON.stringify(dbChat));
+    logger.log(`services.chats.create -> chat:`);
+    logger.log(JSON.stringify(chat));
+    logger.log(`services.chats.create -> dbChat:`);
+    logger.log(JSON.stringify(dbChat));
 
 
     // add record to the capped collection UpdateChatProperties monitored by back-end server instances via the MongoDB Change Stream feature 

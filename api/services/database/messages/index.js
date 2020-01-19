@@ -1,3 +1,5 @@
+const logger = require('../../../../logger');
+
 const constants = require('../../../../constants');
 const config = require('../../../../config');
 const Message = require('../models/Message');
@@ -9,18 +11,18 @@ const {getNextSequenceNumber} = require('../sequences');
 
 // create new message
 async function create(message) {
-    console.log(`services.messages.create invoked`);
+    logger.log(`services.messages.create invoked`);
     if (!message.sequenceNumber) message.sequenceNumber = await(getNextSequenceNumber('messages'));
     const docMessage = new Message(message);
     const dbMessage = await docMessage.save();
 
-    console.log(`services.messages.create -> message: ${JSON.stringify(message)}`);
-    console.log(`services.messages.create -> dbMessage: ${JSON.stringify(dbMessage)}`);
+    logger.log(`services.messages.create -> message: ${JSON.stringify(message)}`);
+    logger.log(`services.messages.create -> dbMessage: ${JSON.stringify(dbMessage)}`);
 
     // add record to the capped collection UpdateChatMessages monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients that there are new messsages in the chat
     const dbChat = await chats.getByGuid(message.chatGuid);
-    console.log(`services.messages.create -> dbChat: ${JSON.stringify(dbChat)}`);
+    logger.log(`services.messages.create -> dbChat: ${JSON.stringify(dbChat)}`);
     const userEmails = dbChat.users.filter(u => u.email !== message.authorEmail).map( u => u.email);
     const dbUsers = await usersEmailsToDbUsers(userEmails);
     const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
@@ -37,18 +39,18 @@ async function create(message) {
 
 
 async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNumberBefore) {
-    console.log(`services.messages.getMessages invoked`);
+    logger.log(`services.messages.getMessages invoked`);
 
-    console.log(`services.messages.getMessages -> sequenceNumberAfter: ${sequenceNumberAfter}`);
-    console.log(`services.messages.getMessages -> sequenceNumberBefore: ${sequenceNumberBefore}`);
+    logger.log(`services.messages.getMessages -> sequenceNumberAfter: ${sequenceNumberAfter}`);
+    logger.log(`services.messages.getMessages -> sequenceNumberBefore: ${sequenceNumberBefore}`);
 
     let sequenceNumberFilter = null;
     const dbChat = await chats.getByGuid(chatGuid);
     const dbChatUser = dbChat.users.find( u => u.email.toLowerCase() === userEmail.toLowerCase());
     const chatDeletedMessagesSequenceNumber = dbChatUser.deletedMessagesSequenceNumber;
-    console.log(`services.messages.getMessages -> dbChat: ${JSON.stringify(dbChat)}`);
-    console.log(`services.messages.getMessages -> dbChatUser: ${JSON.stringify(dbChatUser)}`);
-    console.log(`services.messages.getMessages -> chatDeletedMessagesSequenceNumber: ${chatDeletedMessagesSequenceNumber}`);
+    logger.log(`services.messages.getMessages -> dbChat: ${JSON.stringify(dbChat)}`);
+    logger.log(`services.messages.getMessages -> dbChatUser: ${JSON.stringify(dbChatUser)}`);
+    logger.log(`services.messages.getMessages -> chatDeletedMessagesSequenceNumber: ${chatDeletedMessagesSequenceNumber}`);
 
     if (sequenceNumberAfter) {
         sequenceNumberFilter = sequenceNumberFilter || {};
@@ -83,12 +85,12 @@ async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNum
 
     // if this is a paged request for the most recent messages with no sequenceNumberAfter parameter and no sequenceNumberBefore parameter (first client call)
     if (!sequenceNumberAfter && !sequenceNumberBefore) {
-        console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+        logger.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
         query = Message.find(queryLiteral);
         // get at most config.dbQueryResultCountLimit messages with no filtering on the sequenceNumber field
         messages = await query.lean().sort({ $natural: -1 }).limit(config.dbQueryResultCountLimit).exec(); 
-        console.log(`services.messages.getMessages -> config.dbQueryResultCountLimit: ${config.dbQueryResultCountLimit}`);
-        console.log(`services.messages.getMessages -> messages.length: ${messages.length}`);
+        logger.log(`services.messages.getMessages -> config.dbQueryResultCountLimit: ${config.dbQueryResultCountLimit}`);
+        logger.log(`services.messages.getMessages -> messages.length: ${messages.length}`);
 
         // if we got config.dbQueryResultCountLimit number of messages then we return the messages and indicate that we probably have more older messages in the database moreDataAvailable = true
         // if we got less than this number of messages, then we have no more earlier messages and we return moreDataAvailable = false
@@ -102,12 +104,12 @@ async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNum
     // if this is a paged request for past messages BEFORE a certain sequence numnber
     if (sequenceNumberBefore && !sequenceNumberAfter) {
         queryLiteral['sequenceNumber'] = {'$lt': sequenceNumberBefore};
-        console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+        logger.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
         query = Message.find(queryLiteral);
         // get at most config.dbQueryResultCountLimit messages with sequence numbers ealrier than sequenceNumberBefore
         messages = await query.lean().sort({ $natural: -1 }).limit(config.dbQueryResultCountLimit).exec(); 
-        console.log(`services.messages.getMessages -> config.dbQueryResultCountLimit: ${config.dbQueryResultCountLimit}`);
-        console.log(`services.messages.getMessages -> messages.length: ${messages.length}`);
+        logger.log(`services.messages.getMessages -> config.dbQueryResultCountLimit: ${config.dbQueryResultCountLimit}`);
+        logger.log(`services.messages.getMessages -> messages.length: ${messages.length}`);
 
         // if we got config.dbQueryResultCountLimit number of messages then we return the messages and indicate that we probably have more older messages in the database moreDataAvailable = true
         // if we got less than this number of messages, then we have no more earlier messages and we return moreDataAvailable = false
@@ -125,7 +127,7 @@ async function getMessages(chatGuid, userEmail, sequenceNumberAfter, sequenceNum
         queryLiteral['sequenceNumber'] = {'$gt': sequenceNumberAfter};
         if (sequenceNumberBefore) queryLiteral['sequenceNumber']['$lt'] = sequenceNumberBefore;
 
-        console.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
+        logger.log(`services.messages.getMessages -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
         query = Message.find(queryLiteral);
         // get all messages no matter how many we have - no limit is applied
         messages = await query.lean().sort({ $natural: -1 }).exec(); 
