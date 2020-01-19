@@ -85,10 +85,16 @@ async function getUsersByContactId(contactUserId) {
 async function setUserOnlineStatus(userId, isOnline) {
     const queryLiteral = {
         _id: userId
-    };    
+    };
+    
+    const update = {
+        isOnline
+    };
+    if (isOnline) update.lastOnlinePingTimestamp = new Date(); // update lastOnlinePingTimestamp!
+
     const query = User.updateOne(
         queryLiteral,
-        {isOnline},
+        update,
         {upsert: true}
     );
     await query.exec();
