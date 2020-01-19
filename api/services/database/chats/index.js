@@ -51,7 +51,7 @@ async function create(chat) {
 
     // add record to the capped collection UpdateChatProperties monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in chat properties
-    const affectedUsers  = dbUsers.map( u => ({_id: u._id, isOnline: u.isOnline}) );
+    const affectedUsers  = dbUsers.map( u => ({_id: u._id, email: u.email, isOnline: u.isOnline}) );
     logger.log(`services.chats.create -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
 
     const docUpdateChatProperties = new UpdateChatProperties({
