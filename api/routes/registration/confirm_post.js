@@ -25,8 +25,7 @@ module.exports = function(router) {
 
     router.post(`/confirm`, async function(req, res, next) {  
         logger.log(`Handling POST request for path /confirm, timestamp: ${new Date().toString()}`);
-        logger.log(`confirm.post -> req.body:`);
-        logger.log(req.body);
+        logger.log(`confirm.post -> req.body: ${req.body}`);
 
         let result;
 

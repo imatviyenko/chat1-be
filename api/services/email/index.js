@@ -11,7 +11,7 @@ async function sendConfirmEmailLink(email, displayName) {
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
     const confirmationLinkUrl = `${frontEndBaseUrl}/confirm/${code}`;
     logger.log('*************************************************');
-    logger.log('sendConfirmEmailLink -> confirmationLinkUrl: ', confirmationLinkUrl);
+    logger.log(`sendConfirmEmailLink -> confirmationLinkUrl: ${confirmationLinkUrl}`);
     logger.log('*************************************************');
 
     const result = {status: constants.ERROR_SUCCESS};

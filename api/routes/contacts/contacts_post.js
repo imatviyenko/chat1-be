@@ -26,8 +26,7 @@ module.exports = function(router) {
     router.post(`/contacts`, authorize, async function(req, res, next) {  
         logger.log(`Handling POST request for path /contacts, timestamp: ${new Date().toString()}`);
         logger.log(`contacts.post -> user from token: ${JSON.stringify(req.user)}`);
-        logger.log(`contacts.post -> req.body:`);
-        logger.log(req.body);
+        logger.log(`contacts.post -> req.body: ${JSON.stringify(req.body))}`);
 
         let result;
 
