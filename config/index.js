@@ -1,3 +1,5 @@
+const logger = require('../logger');
+
 const config = {
     environment: process.env.NODE_ENV || 'development',
     frontEndUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -12,4 +14,5 @@ const config = {
     dbQueryResultCountLimit: 5 // limit the max number of returned messages
 };
 
+logger.log(`config: ${JSON.stringify(config)}`);
 module.exports = config;

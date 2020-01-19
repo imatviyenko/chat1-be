@@ -9,7 +9,7 @@ const initWatchers = require('./api/services/database/watchers');
 // Initialize Mongoose 
 const initMongoose = async () => {
     const mongodbUri = config.mongodbUri;
-    logger.log('mongodbUri: ', mongodbUri);
+    logger.log(`initMongoose -> mongodbUri: ${mongodbUri}`);
     await mongoose.connect(mongodbUri, {
         useNewUrlParser: true, 
         useUnifiedTopology: true,
