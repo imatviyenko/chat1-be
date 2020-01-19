@@ -25,7 +25,7 @@ module.exports = function(router) {
 
     router.post(`/confirm`, async function(req, res, next) {  
         logger.log(`Handling POST request for path /confirm, timestamp: ${new Date().toString()}`);
-        logger.log(`confirm.post -> req.body: ${req.body}`);
+        logger.log(`confirm.post -> req.body: ${JSON.stringify(req.body)}`);
 
         let result;
 
@@ -39,11 +39,13 @@ module.exports = function(router) {
 
         let emailFromCode;
         try {
-            emailFromCode = req.body.code && services.crypto.decodeString(req.body.code);
+            const decodedCode = req.body.code && services.crypto.decodeString(req.body.code);
+            logger.log(`confirm.post -> decodedCode: ${JSON.stringify(decodedCode)}`);
+            emailFromCode = JSON.parse(decodedCode).email;
             // decoded email address must not be null
             if (!emailFromCode) throw createInvalidCodeError();
         } catch (e) {
-            const message = `confirm.post -> Error decoding code ${req.body.code}: ${errorToString(e)}`;
+            const message = `confirm.post -> Error decoding code ${req.body.code}}`;
             logger.error(message);
             logger.error(e);
             const status = e.name == constants.ERROR_REGISTRATION_INVALID_CODE ? constants.ERROR_REGISTRATION_INVALID_CODE : constants.ERROR_GENERIC_SERVER_FAILURE;

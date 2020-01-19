@@ -2,6 +2,7 @@ const logger = require('../../../logger');
 
 const bcrypt = require('bcryptjs');
 const jsonwebtoken = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const constants = require('../../../constants');
 const config = require('../../../config');
@@ -20,12 +21,19 @@ async function validatePassword(password, hash) {
 }
 
 function encodeString(plainTextString) {
-    return `${config.serverSecret}.${plainTextString}`;
+    // https://lollyrock.com/posts/nodejs-encryption/
+    const cipher = crypto.createCipher(config.cipherAlgorithm, config.serverSecret);
+    let crypted = cipher.update(plainTextString, 'utf8', 'hex');
+    crypted += cipher.final('hex');
+    return crypted;
 }
 
 function decodeString(encryptedString) {
-    if (!encryptedString || !encryptedString.includes(`${config.serverSecret}.`)) throw createCustomError('CryptoError', 'Error decrypting string');
-    return encryptedString.replace(`${config.serverSecret}.`, '');
+    // https://lollyrock.com/posts/nodejs-encryption/
+    const decipher = crypto.createDecipher(config.cipherAlgorithm, config.serverSecret);
+    let dec = decipher.update(encryptedString, 'hex', 'utf8')
+    dec += decipher.final('utf8');
+    return dec;
 }
 
 function getAuthToken(user) {

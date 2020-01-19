@@ -28,8 +28,7 @@ module.exports = function(router) {
 
     router.post(`/register`, async function(req, res, next) {  
         logger.log(`Handling POST request for path /register, timestamp: ${new Date().toString()}`);
-        logger.log(`register.post -> req.body:`);
-        logger.log(req.body);
+        logger.log(`register.post -> req.body: ${JSON.stringify(req.body)}`);
 
         let result;
 
@@ -43,15 +42,16 @@ module.exports = function(router) {
         let emailFromCode;
         let user;
         try {
-            emailFromCode = req.body.code && services.crypto.decodeString(req.body.code);
-            
+            const decodedCode = req.body.code && services.crypto.decodeString(req.body.code);
+            logger.log(`register.post -> decodedCode: ${JSON.stringify(decodedCode)}`);
+            emailFromCode = req.body.code && JSON.parse(decodedCode).email;
             if (emailFromCode) {
                 // decoded email address from the code must be equal to the posted email value in the request body
                 if (!req.body.email || emailFromCode.toLowerCase() !== req.body.email.toLowerCase()) throw createInvalidCodeError();
             }
             
         } catch (e) {
-            const message = `register.post -> Error decoding code ${req.body.code}: ${errorToString(e)}`;
+            const message = `register.post -> Error decoding code ${req.body.code}}`;
             logger.error(message);
             logger.error(e);
             const status = e.name == constants.ERROR_REGISTRATION_INVALID_CODE ? constants.ERROR_REGISTRATION_INVALID_CODE : constants.ERROR_GENERIC_SERVER_FAILURE;
