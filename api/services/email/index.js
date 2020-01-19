@@ -17,7 +17,7 @@ async function sendConfirmEmailLink(email, displayName) {
     logger.log('*************************************************');
 
     const subject = `Confirm email`;
-    const body = `<p>Dear ${displayName}</p><p>Please click on the link to confirm your email and complete registration in the chat system: <a href="${confirmationLinkUrl}">Confirm Email</a></p>`;
+    const body = `<p>Dear ${displayName},</p><p>Please click on the link to confirm your email and complete registration in the chat system: <a href="${confirmationLinkUrl}">Confirm Email</a></p>`;
 
     return emailAlerts.create(email, constants.EMAIL_TYPE_CONFIRMATION_LINK, subject, body);
 }
@@ -32,10 +32,10 @@ async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail)
     logger.log(`sendRegistrationRequest -> registrationLinkUrl: ${registrationLinkUrl}`);
     logger.log('*************************************************');
 
-    const result = {status: constants.ERROR_SUCCESS};
-    return new Promise( (resolve, reject) => {
-        setTimeout(resolve(result), timeoutInSeconds * 1000);
-    });
+    const subject = `Registration link`;
+    const body = `<p>You are invited by '${userDisplayName}' ${userEmail} to register in the chat system,</p><p> Please click on the link to register: <a href="${registrationLinkUrl}">Registration Link</a></p>`;
+
+    return emailAlerts.create(email, constants.EMAIL_TYPE_REGISTRATION_REQUEST, subject, body);
 }
 
 
@@ -52,11 +52,15 @@ async function sendNewMessagesNotification(userEmail, authorEmail, chatType, cha
     logger.log(`sendNewMessagesNotification -> linkUrl: ${linkUrl}`);
     logger.log('*************************************************');
 
-    const result = {status: constants.ERROR_SUCCESS};
-    return new Promise( (resolve, reject) => {
-        setTimeout(resolve(result), timeoutInSeconds * 1000);
-    });
+    const subject = `Registration link`;
+    const notificationText = chatType === constants.CHAT_TYPE_PRIVATE ?
+        `There are new messages from ${authorEmail} in private chat ${chatDisplayName}.`
+        :
+        `There are new messages from ${authorEmail} in group chat ${chatDisplayName}.`;
 
+    const body = `<p>Dear ${displayName},</p><p>${notificationText}. <a href="${linkUrl}">Login to chat system</a></p>`;
+
+    return emailAlerts.create(email, constants.EMAIL_TYPE_NEW_MESSAGES, subject, body);
 }
 
 module.exports = {
