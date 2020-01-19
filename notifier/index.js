@@ -6,10 +6,12 @@ const {eventEmmiterWatcher} = require('../api/events');
 
 const openSockets = {};
 
+/*
 // Reset online status for all users when back-end server is restarted
 // Due to limitations of the current implementation, all back-end server instaces must be started before first users connects to the system, 
 // because each server instance resets users' online status when it initializes
-(async () => {await services.database.users.resetAllUsersOnlineStatus()})();
+// (async () => {await services.database.users.resetAllUsersOnlineStatus()})();
+*/
 
 
 
@@ -37,16 +39,29 @@ wss.on('connection', async (ws, request) => {
     };
 
 
-    /*
-    ws.on('message', message => {
-        console.log(`received from user with email ${request.user.email}: ${message}`);
-        ws.send(`Hello ${request.user.displayName}, you sent -> ${message}`);
+    ws.on('message', async messageString => {
+        if (messageString) {
+            console.log(`ws.on.message -> messageString: ${messageString}`);
+    
+            try {
+                const message = JSON.parse(messageString);
+                if (message && message.token) {
+                    const jwtPayload = services.crypto.decodeAuthToken(message.token);
+                    console.log(`ws.on.message -> jwtPayload.sub: ${jwtPayload && jwtPayload.sub}`);
+                    if (jwtPayload) {
+                        await services.database.users.updateUserOnlinePingTimestamp(jwtPayload.sub); // sub field of jwt token should contain user email
+                    }
+                }
+            } catch (e) {
+                console.error(`ws.on.message -> error:`);
+                console.error(e);
+            }
+        } else {
+            console.error(`ws.on.message -> error: Empty message recieved from the client`);
+        }
     });
-
-    //send immediatly a feedback to the incoming connection    
-    ws.send(`Hi there, I am a WebSocket server, and you are ${request.user.email}`);
-    */
 });
+
 
 const brodcastMessageToAffectedUsers = async (wsMessage, affectedUsers) => {
     if (Array.isArray(affectedUsers)) {

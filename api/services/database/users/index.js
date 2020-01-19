@@ -49,14 +49,6 @@ async function _upsert(queryLiteral, user) {
         {upsert: true, new: true}
     );
     return query.lean().exec();
-    /*
-    const query = User.updateOne(
-        queryLiteral,
-        {$set: user},
-        {upsert: true}
-    );
-    await query.exec();
-    */
 }
 
 async function getById(userId) {
@@ -75,20 +67,6 @@ async function getByEmailStatus(filterEmail, filterStatus) {
     return query.lean().exec();
 }
 
-/*
-async function getOnlineUsersIdsByContactId(contactUserId) {
-    const queryLiteral = {
-        isOnline: true,
-        "contacts": contactUserId
-    };
-    console.log(`getOnlineUsersIdsByContactId -> queryLiteral: ${JSON.stringify(queryLiteral)}`);
-
-    const query = User.find(queryLiteral, '_id'); // get only _id property of all matching users
-    const dbResult = await query.lean().exec();
-    console.log(`getOnlineUsersIdsByContactId -> dbResult: ${JSON.stringify(dbResult)}`);
-    return dbResult.map( d => d._id );
-}
-*/
 
 async function getUsersByContactId(contactUserId) {
     const queryLiteral = {
@@ -128,6 +106,7 @@ async function setUserOnlineStatus(userId, isOnline) {
     return docUpdateUserOnlineStatus.save();
 }
 
+/*
 // Reset online status for all users when back-end server is restarted
 async function resetAllUsersOnlineStatus() {
     const query = User.updateMany(
@@ -136,12 +115,23 @@ async function resetAllUsersOnlineStatus() {
     );
     await query.exec();
 }
+*/
 
+async function updateUserOnlinePingTimestamp(email) {
+    const queryLiteral = {
+        email
+    };
+    const query = User.findOneAndUpdate(
+        queryLiteral,
+        {lastOnlinePingTimestamp: new Date()}
+    );
+    await query.exec();
+}
 
 async function isUserOnline(email) {
     const queryLiteral = {
         email
-    };    
+    };
     const query = User.findOne(
         queryLiteral,
         'isOnline'
@@ -175,8 +165,8 @@ module.exports = {
     getByEmailStatus,
     isUserOnline,
     setUserOnlineStatus,
+    updateUserOnlinePingTimestamp,
     getUsersByContactId,
-    //getOnlineUsersIdsByContactId,
-    resetAllUsersOnlineStatus,
+    //resetAllUsersOnlineStatus,
     usersEmailsToDbUsers
 };

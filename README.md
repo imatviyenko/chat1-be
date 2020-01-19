@@ -6,6 +6,11 @@ Node/Express back end for demo chat app
 - Make sure that Azure App Service CI is configured per instuctions in chat1-azure/README.md
 - Push to the "master" branch on github
 - Azure App Service CI will deploy the latest build automatically
+- Configure environment variables (App settings -> Configuration -> Application settings):
+    - SERVER_SECRET: "secret value used for server side crypto operations"
+    - MONGODB_URI: mongodb+srv://chat1:chat1@cluster0-vruvz.azure.mongodb.net/chat1?retryWrites=true&w=majority
+    - FRONTEND_URL: https://chat1.imatviyenko.xyz
+
 
 ## Debug on Azure
 - Make sure that "Application Logging (Filesystem)" setting is set to "On" and the level is set to "Verbose" in the App settings -> Monitoring -> App Service logs section

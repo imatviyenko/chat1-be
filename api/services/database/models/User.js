@@ -13,7 +13,7 @@ const schema = new mongoose.Schema(
     passwordHash: String,
     status: { type: String, index: true, required: true },
     isOnline: { type: Boolean, index: true },
-    registrationDate: Date,
+    lastOnlinePingTimestamp: { type: Date, index: true},
     emailConfirmationCode: String,
     contacts: [{ type : mongoose.Schema.Types.ObjectId, ref: 'User' }]
   },
