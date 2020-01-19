@@ -9,7 +9,7 @@ const timeoutInSeconds = 5;
 async function sendConfirmEmailLink(email, displayName) {
     const code = encodeString(email);
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
-    const confirmationLinkUrl = `${frontEndBaseUrl}/confirm/${code}`;
+    const confirmationLinkUrl = `${frontEndBaseUrl}/#/confirm/${code}`;
     logger.log('*************************************************');
     logger.log(`sendConfirmEmailLink -> confirmationLinkUrl: ${confirmationLinkUrl}`);
     logger.log('*************************************************');
@@ -24,9 +24,9 @@ async function sendConfirmEmailLink(email, displayName) {
 async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail) {
     const code = encodeString(contactEmail);
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
-    const registrationLinkUrl = `${frontEndBaseUrl}/register/${code}`;
+    const registrationLinkUrl = `${frontEndBaseUrl}/#/register/${code}`;
     logger.log('*************************************************');
-    logger.log('sendRegistrationRequest -> registrationLinkUrl: ', registrationLinkUrl);
+    logger.log(`sendRegistrationRequest -> registrationLinkUrl: ${registrationLinkUrl}`);
     logger.log('*************************************************');
 
     const result = {status: constants.ERROR_SUCCESS};

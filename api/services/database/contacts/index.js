@@ -26,6 +26,10 @@ async function getByUserEmail(userEmail) {
 }
 
 async function add(userEmail, contactDbUser) {
+    logger.log(`services.contacts.add invoked`);
+    logger.log(`services.contacts.add -> userEmail: ${userEmail}`);
+    logger.log(`services.contacts.add -> contactDbUser: ${JSON.stringify(contactDbUser)}`);
+
     const queryLiteral = {
         email: userEmail.toLowerCase()
     };

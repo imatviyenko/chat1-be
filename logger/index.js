@@ -6,7 +6,7 @@ const log = message => {
 };
 
 const error = message => {
-    const _message = `${(new Date()).toISOString()} \t ${serializeError(message)}`;
+    const _message = `${(new Date()).toISOString()} \t ${JSON.stringify(serializeError(message))}`;
     console.error(_message);
 };
 

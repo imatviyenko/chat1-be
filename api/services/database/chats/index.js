@@ -33,6 +33,9 @@ async function getByGuid(chatGuid) {
 
 // create new chat
 async function create(chat) {
+    logger.log(`services.chats.create invoked`);
+    logger.log(`services.chats.create -> chat: ${JSON.stringify(chat)}`);
+
     const dbUsers = await usersEmailsToDbUsers(chat.usersEmails);
     const docChat = new Chat({
         guid: chat.guid,
@@ -42,15 +45,15 @@ async function create(chat) {
     });
     const dbChat = await docChat.save();
 
-    logger.log(`services.chats.create -> chat:`);
-    logger.log(JSON.stringify(chat));
-    logger.log(`services.chats.create -> dbChat:`);
-    logger.log(JSON.stringify(dbChat));
-
+    logger.log(`services.chats.create -> dbUsers: ${JSON.stringify(dbUsers)}`);
+    logger.log(`services.chats.create -> dbChat: ${JSON.stringify(dbChat)}`);
+    
 
     // add record to the capped collection UpdateChatProperties monitored by back-end server instances via the MongoDB Change Stream feature 
     // this will trigger watcher components of the back-end server instances to notify the connected WebSocket clients of the change in chat properties
     const affectedUsers  = dbUsers.map( u => ({_id: u._id, isOnline: u.isOnline}) );
+    logger.log(`services.chats.create -> affectedUsers: ${JSON.stringify(affectedUsers)}`);
+
     const docUpdateChatProperties = new UpdateChatProperties({
         chatGuid: chat.guid,
         affectedUsers
@@ -68,6 +71,10 @@ async function create(chat) {
 
 
 async function updateByGuid(chatGuid, chat) {
+    logger.log(`services.chats.updateByGuid invoked`);
+    logger.log(`services.chats.updateByGuid -> chatGuid: ${chatGuid}`);
+    logger.log(`services.chats.updateByGuid -> chat: ${JSON.stringify(chat)}`);
+
     const queryLiteral = {
         guid: chatGuid
     };

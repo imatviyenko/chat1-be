@@ -72,12 +72,14 @@ module.exports = function(router) {
             // Add contact to the user record in the database
             logger.log(`contacts.post -> contactDbUser3: ${JSON.stringify(contactDbUser)}`);
             dbContact = await services.database.contacts.add(req.user.email, contactDbUser);
+            logger.log(`contacts.post -> user ${contactDbUser.email} added as contact to user ${req.user.email}`);
+            logger.log(`contacts.post -> dbContact: ${JSON.stringify(dbContact)}`);
 
             // add the current user to list of contact of the contact (if User1 adds User2 as a contact, then User2 will have User1 in his contacts as well)
             await services.database.contacts.add(contactDbUser.email, req.user);
+            logger.log(`contacts.post -> user ${req.user.email} added as contact to user ${contactDbUser.email}`);
 
             // Create a new private chat between the user and the contact
-            
             const chat = {
                 guid: uuidv4().toLowerCase(),
                 displayName: config.defaultPrivateChatDisplayName,
