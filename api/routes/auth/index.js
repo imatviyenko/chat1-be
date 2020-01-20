@@ -12,7 +12,7 @@ const validateBody = body => {
 
     const schema = Joi.object().keys({ 
         email: Joi.string().email().required(),
-        password: Joi.string().min(constants.MIN_PASSWORD_LENGTH).max(constants.MIN_PASSWORD_LENGTH).required()
+        password: Joi.string().min(constants.MIN_PASSWORD_LENGTH).max(constants.MAX_PASSWORD_LENGTH).required()
     }); 
 
     return Joi.validate(body, schema);
