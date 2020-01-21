@@ -35,5 +35,5 @@ module.exports =  {
     EMAIL_STATUS_QUEUED: 'queued',
     EMAIL_STATUS_SENT: 'sent',
     EMAIL_STATUS_FAILED: 'failed',
-    MAX_USERS_PER_GROUP_CHAT: 3
+    MAX_USERS_PER_GROUP_CHAT: 10
 };
