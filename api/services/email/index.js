@@ -35,7 +35,7 @@ async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail)
     const subject = `Registration link`;
     const body = `<p>You are invited by '${userDisplayName}' ${userEmail} to register in the chat system,</p><p> Please click on the link to register: <a href="${registrationLinkUrl}">Registration Link</a></p>`;
 
-    return emailAlerts.create(email, constants.EMAIL_TYPE_REGISTRATION_REQUEST, subject, body);
+    return emailAlerts.create(contactEmail, constants.EMAIL_TYPE_REGISTRATION_REQUEST, subject, body);
 }
 
 
@@ -60,7 +60,7 @@ async function sendNewMessagesNotification(userEmail, authorEmail, chatType, cha
 
     const body = `<p>Dear ${displayName},</p><p>${notificationText}. <a href="${linkUrl}">Login to chat system</a></p>`;
 
-    return emailAlerts.create(email, constants.EMAIL_TYPE_NEW_MESSAGES, subject, body);
+    return emailAlerts.create(userEmail, constants.EMAIL_TYPE_NEW_MESSAGES, subject, body);
 }
 
 module.exports = {
