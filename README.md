@@ -37,3 +37,7 @@ Node/Express back end for demo chat app
         rs.status()
         ```        
 3. Execute in VSCode command prompt: npm start
+
+After that the back-end service instance will be started on http://localhost:3001
+Please note that chat1-worker component which runs background tasks cannot be run locally, so you may need to reset user's online status manually by editing documents in the MongoDB 'users' collection if after back-end service restart user status remains set to 'online'.
+
