@@ -37,14 +37,13 @@ module.exports = function(router) {
         logger.log(`chats.put -> req.body:`);
         logger.log(req.body);
 
-        const validationResult = validateBody(req.body);
-        if (validationResult.error) {
+        let validationResult = validateBody(req.body);
+        if ( validationResult.error || !Array.isArray(req.body.users) || req.body.users.length > constants.MAX_USERS_PER_GROUP_CHAT ) {
             const message = 'chats.put -> Error validating request body';
             logger.log(message);
             return next(createError(message, constants.ERROR_INVALID_PARAMETERS, 400, validationResult.error));
         }
         logger.log(`chats.put -> req.body validated succcessfully`);
-
 
         const chat = req.body;
         let updatedChat;
