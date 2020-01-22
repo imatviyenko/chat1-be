@@ -3,10 +3,11 @@ const logger = require('../../../logger');
 const constants = require('../../../constants');
 const config = require('../../../config');
 const {encodeString} = require('../crypto');
-const timeoutInSeconds = 5;
 const emailAlerts = require('../database/emailAlerts');
 
 async function sendConfirmEmailLink(email, displayName) {
+    logger.log(`services.email.sendConfirmEmailLink invoked`);
+
     const codeString = JSON.stringify({email: email});
     const code = encodeString(codeString);
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
@@ -24,6 +25,8 @@ async function sendConfirmEmailLink(email, displayName) {
 
 
 async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail) {
+    logger.log(`services.email.sendRegistrationRequest invoked`);
+
     const codeString = JSON.stringify({email: contactEmail});
     const code = encodeString(codeString);
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
@@ -40,6 +43,8 @@ async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail)
 
 
 async function sendNewMessagesNotification(userEmail, userDisplayName, authorEmail, chatType, chatDisplayName) {
+    logger.log(`services.email.sendNewMessagesNotification invoked`);
+    
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
     const linkUrl = frontEndBaseUrl;
     const _chatName = chatType === constants.CHAT_TYPE_PRIVATE ? 

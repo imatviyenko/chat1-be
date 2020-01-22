@@ -11,7 +11,7 @@ const schemaOptions = {
 const schema = new mongoose.Schema(
   {
     email: { type: String, index: true, required: true },
-    type: { type: String, index: true, required: true, enum: [constants.EMAIL_TYPE_CONFIRMATION_LINK, constants.EMAIL_TYPE_REGISTRATION_REQUEST, constants.EVENT_CHAT_NEW_MESSAGES] },
+    type: { type: String, index: true, required: true, enum: [constants.EMAIL_TYPE_CONFIRMATION_LINK, constants.EMAIL_TYPE_REGISTRATION_REQUEST, constants.EMAIL_TYPE_NEW_MESSAGES] },
     body: { type: String, required: true },
     subject: { type: String,  required: true },
     status: { type: String, index: true, required: true, enum: [constants.EMAIL_STATUS_QUEUED, constants.EMAIL_STATUS_SENT, constants.EMAIL_STATUS_FAILED] }
