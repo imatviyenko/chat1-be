@@ -57,13 +57,13 @@ async function sendNewMessagesNotification(userEmail, userDisplayName, authorEma
     logger.log(`sendNewMessagesNotification -> linkUrl: ${linkUrl}`);
     logger.log('*************************************************');
 
-    const subject = `Registration link`;
+    const subject = `New messages`;
     const notificationText = chatType === constants.CHAT_TYPE_PRIVATE ?
-        `There are new messages from ${authorEmail} in private chat ${chatDisplayName}.`
+        `There are new messages from ${authorEmail} in private chat.`
         :
         `There are new messages from ${authorEmail} in group chat ${chatDisplayName}.`;
 
-    const body = `<p>Dear ${userDisplayName},</p><p>${notificationText}. <a href="${linkUrl}">Login to chat system</a></p>`;
+    const body = `<p>${notificationText}. <a href="${linkUrl}">Login to chat system</a></p>`;
 
     return emailAlerts.create(userEmail, constants.EMAIL_TYPE_NEW_MESSAGES, subject, body);
 }
