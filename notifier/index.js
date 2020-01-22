@@ -82,7 +82,7 @@ const notifyOfflineUsersUnreadMessages = async (chatType, chatDisplayName, autho
     logger.log(`notifyOfflineUsersUnreadMessages -> chatType: ${chatType}, chatDisplayName: ${chatDisplayName}, authorEmail: ${authorEmail}`);
     if (Array.isArray(affectedUsers)) {
         const offlineUsers = affectedUsers.filter( affectedUser => !affectedUser.isOnline && affectedUser.email.toLowerCase() !== authorEmail.toLowerCase());
-        const promises = offlineUsers.map( offlineUser => {
+        const promises = offlineUsers.map( async offlineUser => {
             // send email to offline user
             try {
                 logger.log(`notifyOfflineUsersUnreadMessages -> offlineUser.email: ${offlineUser.email}`);
