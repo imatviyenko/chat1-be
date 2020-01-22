@@ -39,7 +39,7 @@ async function sendRegistrationRequest(userEmail, userDisplayName, contactEmail)
 }
 
 
-async function sendNewMessagesNotification(userEmail, authorEmail, chatType, chatDisplayName) {
+async function sendNewMessagesNotification(userEmail, userDisplayName, authorEmail, chatType, chatDisplayName) {
     const frontEndBaseUrl = config.frontEndUrl.replace(/\/$/, '');
     const linkUrl = frontEndBaseUrl;
     const _chatName = chatType === constants.CHAT_TYPE_PRIVATE ? 
@@ -58,7 +58,7 @@ async function sendNewMessagesNotification(userEmail, authorEmail, chatType, cha
         :
         `There are new messages from ${authorEmail} in group chat ${chatDisplayName}.`;
 
-    const body = `<p>Dear ${displayName},</p><p>${notificationText}. <a href="${linkUrl}">Login to chat system</a></p>`;
+    const body = `<p>Dear ${userDisplayName},</p><p>${notificationText}. <a href="${linkUrl}">Login to chat system</a></p>`;
 
     return emailAlerts.create(userEmail, constants.EMAIL_TYPE_NEW_MESSAGES, subject, body);
 }
