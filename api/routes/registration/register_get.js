@@ -16,7 +16,9 @@ module.exports = function(router) {
 
         let emailFromCode;
         try {
-            emailFromCode = services.crypto.decodeString(code);
+            const decodedCode = code && services.crypto.decodeString(code);
+            logger.log(`register.get -> decodedCode: ${JSON.stringify(decodedCode)}`);
+            emailFromCode = code && JSON.parse(decodedCode).email;        
             if (!emailFromCode) throw createInvalidCodeError();
         } catch (e) {
             const message = `register.get -> Error decoding code ${code}}`;
