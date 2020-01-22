@@ -78,21 +78,21 @@ const brodcastMessageToAffectedUsers = async (wsMessage, affectedUsers) => {
 };
 
 
-const notifyOfflineUsersUnreadMessages = (chatType, chatDisplayName, authorEmail, affectedUsers) => {
+const notifyOfflineUsersUnreadMessages = async (chatType, chatDisplayName, authorEmail, affectedUsers) => {
     logger.log(`notifyOfflineUsersUnreadMessages -> chatType: ${chatType}, chatDisplayName: ${chatDisplayName}, authorEmail: ${authorEmail}`);
     if (Array.isArray(affectedUsers)) {
-        affectedUsers.forEach( affectedUser => {
-            if (!affectedUser.isOnline && affectedUser.email.toLowerCase() !== authorEmail.toLowerCase()) {
-                // send email to offline user
-                try {
-                    logger.log(`notifyOfflineUsersUnreadMessages -> affectedUser.email: ${affectedUser.email}`);
-                    services.email.sendNewMessagesNotification(affectedUser.email, authorEmail, chatType, chatDisplayName); // call async function without await
-                } catch (e) {
-                    logger.error(`notifyOfflineUsersUnreadMessages -> error:`);
-                    logger.error(e);
-                };
-            }
+        const offlineUsers = affectedUsers.filter( affectedUser => !affectedUser.isOnline && affectedUser.email.toLowerCase() !== authorEmail.toLowerCase());
+        const promises = offlineUsers.map( offlineUser => {
+            // send email to offline user
+            try {
+                logger.log(`notifyOfflineUsersUnreadMessages -> offlineUser.email: ${offlineUser.email}`);
+                await services.email.sendNewMessagesNotification(offlineUser.email, authorEmail, chatType, chatDisplayName); // call async function without await
+            } catch (e) {
+                logger.error(`notifyOfflineUsersUnreadMessages -> error:`);
+                logger.error(e);
+            };
         });
+        await Promise.all(promises); // await while email alerts for all offline users are registerd in the database
     }
 };
 
